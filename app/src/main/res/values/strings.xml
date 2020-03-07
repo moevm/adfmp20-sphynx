@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Geoquest</string>
+    <string name="login">Вход</string>
+    <string name="sign_up_question">Нет аккунта?</string>
+    <string name="sign_up">Зарегистрироваться</string>
+    <string name="registration">Регистрация</string>
 </resources>
