@@ -20,35 +20,72 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 
-    <EditText
-        
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/default_margin"
+        android:src="@drawable/sphynx"
+        app:layout_constraintBottom_toTopOf="@+id/login_input"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/login_input"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/default_margin"
+        android:layout_marginBottom="@dimen/small_margin"
+        android:hint="@string/login"
+        app:layout_constraintBottom_toTopOf="@id/password_input">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/password_input"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/default_margin"
+        android:layout_marginBottom="@dimen/double_margin"
+        android:hint="@string/password"
+        app:layout_constraintBottom_toTopOf="@id/sign_in_button">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
 
     <Button
         android:id="@+id/sign_in_button"
-        android:text="@string/sign_in"
-        android:textColor="@color/white"
-        android:textSize="@dimen/button_text"
         android:layout_width="match_parent"
         android:layout_height="@dimen/button_height"
         android:layout_marginHorizontal="@dimen/default_margin"
         android:layout_marginBottom="@dimen/default_margin"
         android:background="@drawable/primary_color_button"
+        android:text="@string/sign_in"
+        android:textColor="@color/white"
+        android:textSize="@dimen/button_text"
         app:layout_constraintBottom_toTopOf="@id/sign_in_google_button" />
 
 
     <Button
         android:id="@+id/sign_in_google_button"
-        android:text="@string/sign_in_with_google"
-        android:textColor="#77000000"
-        android:textSize="@dimen/button_text"
         android:layout_width="match_parent"
         android:layout_height="@dimen/button_height"
         android:layout_marginHorizontal="@dimen/default_margin"
         android:layout_marginBottom="@dimen/double_margin"
         android:background="@drawable/stroke_button"
+        android:text="@string/sign_in_with_google"
+        android:textColor="#77000000"
+        android:textSize="@dimen/button_text"
         app:layout_constraintBottom_toTopOf="@id/sign_up_layout" />
 
 
