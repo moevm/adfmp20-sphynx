@@ -4,4 +4,6 @@
     <string name="sign_up_question">Нет аккунта?</string>
     <string name="sign_up">Зарегистрироваться</string>
     <string name="registration">Регистрация</string>
+    <string name="sign_in">Войти</string>
+    <string name="sign_in_with_google">Sign in with google</string>
 </resources>

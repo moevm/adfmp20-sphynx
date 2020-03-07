@@ -11,9 +11,9 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        val signInButton = findViewById<TextView>(R.id.sign_in_button)
+        val signUnButton = findViewById<TextView>(R.id.sign_up_button)
 
-        signInButton.setOnClickListener {
+        signUnButton.setOnClickListener {
             startActivity(Intent(this, RegistrationActivity::class.java))
         }
     }

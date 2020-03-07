@@ -5,4 +5,7 @@
     <dimen name="subtitle_text">16sp</dimen>
     <dimen name="double_margin">32dp</dimen>
     <dimen name="small_margin">8dp</dimen>
+    <dimen name="rounded_corners">8dp</dimen>
+    <dimen name="button_height">50dp</dimen>
+    <dimen name="button_text">14sp</dimen>
 </resources>
