@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    <fragment
         xmlns:map="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/map"
@@ -19,13 +19,8 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/menu_bottom_bar"
-        android:background="@color/colorBottomBarBackground"
-        app:itemIconTint="@color/colorBottomBarTint"
-        app:itemTextColor="@color/common_google_signin_btn_text_light"
+        style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
         />
-
-<!--        style="@style/Widget.MaterialComponents.BottomNavigationView"-->
-
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

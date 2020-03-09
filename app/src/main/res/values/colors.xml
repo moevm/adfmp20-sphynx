@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    colorPrimary
-    <color name="colorPrimary">#FFFFFF</color>
-    <color name="colorPrimaryDark">#3F51B5</color>
-    <color name="colorAccent">#000000</color>
+    <color name="colorPrimary">#00B8D4</color>
+    <color name="colorPrimaryDark">#00BFA5</color>
+    <color name="colorAccent">#910000</color>
 
-
-    <color name="bottom_bar_button_primary">#3F51B5</color>
-    <color name="bottom_bar_button_on_surface">#303F9F</color>
-
-    <color name="colorBottomBarBackground">#FFFFFF</color>
-    <color name="colorBottomBarTint">#FF0000</color>
+    <color name="colorBottomBarBackground">#FF0000</color>
+    <color name="colorBottomBarTint">#7E7E7E</color>
 
 </resources>
