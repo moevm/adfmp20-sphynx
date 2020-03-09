@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:title="@string/menu_1"
-        android:icon="@drawable/ic_bottom_home"
-        android:id="@+id/bottom_navigation_home"/>
+        android:title="@string/bottom_menu_1"
+        android:icon="@drawable/ic_bottom_quests"
+        android:id="@+id/bottom_navigation_quests"/>
 
     <item
-        android:title="@string/menu_2"
+        android:title="@string/bottom_menu_2"
         android:icon="@drawable/ic_bottom_map"
         android:id="@+id/bottom_navigation_map"
         />
 
     <item
-        android:title="@string/menu_3"
+        android:title="@string/bottom_menu_3"
         android:icon="@drawable/ic_bottom_profile"
         android:id="@+id/bottom_navigation_profile"
         />
