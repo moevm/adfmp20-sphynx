@@ -1,14 +1,15 @@
 package com.moevm.geoquest
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
-
-//    private lateinit var mMap: GoogleMap
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,15 +25,12 @@ class MainActivity : AppCompatActivity() {
 
                 R.id.bottom_navigation_quests -> {
                     selectedFragment = QuestsFragment()
-                    Toast.makeText(this, "quests", Toast.LENGTH_SHORT).show()
                 }
                 R.id.bottom_navigation_map -> {
                     selectedFragment = MapFragment()
-                    Toast.makeText(this, "map", Toast.LENGTH_SHORT).show()
                 }
                 R.id.bottom_navigation_profile -> {
                     selectedFragment = ProfileFragment()
-                    Toast.makeText(this, "profile", Toast.LENGTH_SHORT).show()
                 }
             }
             return@setOnNavigationItemSelectedListener if(selectedFragment != null) {
