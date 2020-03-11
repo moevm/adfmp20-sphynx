@@ -39,8 +39,10 @@
         app:layout_constraintBottom_toTopOf="@id/password_input">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/login_input_text"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -55,8 +57,10 @@
         app:layout_constraintBottom_toTopOf="@id/password_confirmation">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/password_input_text"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -71,8 +75,10 @@
         app:layout_constraintBottom_toTopOf="@id/sign_in_button">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/password_confirmation_text"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
