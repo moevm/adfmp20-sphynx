@@ -23,5 +23,6 @@
     <string name="dialog_yes">Да</string>
     <string name="dialog_no">Нет</string>
     <string name="quests_list">Список квестов</string>
+    <string name="how_to_play">Как играть?</string>
 
 </resources>
