@@ -8,10 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.ListView
-import android.widget.TextView
+import android.widget.*
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -26,13 +23,12 @@ class QuestsFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        if (view == null)
-        {
+        if (view == null) {
             Log.d("CHECKER", "Empty view in fragment")
         }
 
         mListView = view!!.findViewById(R.id.quests_list)
-        mQuestsArray = Array(10){"$it"}
+        mQuestsArray = Array(10) { "$it" }
 
         val btnToLogin = view?.findViewById<Button>(R.id.to_login)
         btnToLogin?.setOnClickListener {
@@ -46,10 +42,12 @@ class QuestsFragment : Fragment() {
                 .setCancelable(false)
                 .setPositiveButton(getString(R.string.dialog_yes)) { dialog, id ->
                     Log.d("CHECKER", "Give up quest")
-                    view?.findViewById<ConstraintLayout>(R.id.current_quest_container)?.visibility = View.GONE
+                    view?.findViewById<ConstraintLayout>(R.id.current_quest_container)?.visibility =
+                        View.GONE
                     view?.findViewById<TextView>(R.id.current_quest_name)?.text = ""
                 }
-                .setNegativeButton(getString(R.string.dialog_no)) { dialog, id -> dialog.cancel()
+                .setNegativeButton(getString(R.string.dialog_no)) { dialog, id ->
+                    dialog.cancel()
                     Log.d("CHECKER", "Don't give up quest")
                 }
             val alert = dialogBuilder.create()
@@ -71,11 +69,18 @@ class QuestsFragment : Fragment() {
                     val bnb = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
                     bnb?.selectedItemId = R.id.bottom_navigation_map
                 }
-                .setNegativeButton(getString(R.string.dialog_no)) { dialog, id -> dialog.cancel()
+                .setNegativeButton(getString(R.string.dialog_no)) { dialog, id ->
+                    dialog.cancel()
                 }
             val alert = dialogBuilder.create()
             alert.setTitle(getString(R.string.sure_start_quest_title))
             alert.show()
+        }
+
+        val infoButton = view!!.findViewById<ImageButton>(R.id.info_button)
+
+        infoButton.setOnClickListener {
+            startActivity(Intent(context, InfoActivity::class.java))
         }
     }
 
