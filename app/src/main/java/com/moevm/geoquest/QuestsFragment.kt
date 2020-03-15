@@ -1,7 +1,6 @@
 package com.moevm.geoquest
 
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -12,13 +11,15 @@ import android.widget.*
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.moevm.geoquest.models.QuestModel
+import com.moevm.geoquest.models.QuestStatus
 
 
 class QuestsFragment : Fragment() {
 
     private lateinit var mListView: ListView
     private lateinit var mQuestsArray: Array<String>
-    private lateinit var mQuestsList: ArrayAdapter<String>
+    private lateinit var mQuestsList: ArrayAdapter<QuestModel>
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -55,7 +56,47 @@ class QuestsFragment : Fragment() {
             alert.show()
         }
 
-        mQuestsList = ArrayAdapter(context!!, android.R.layout.simple_list_item_1, mQuestsArray)
+        mQuestsList = QuestsArrayAdapter(
+            context!!,
+            R.layout.quest_list_item,
+            arrayOf(
+                QuestModel(
+                    4,
+                    "СФИНКСЫ",
+                    QuestStatus.completed,
+                    "Петрога",
+                    "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
+                ),
+                QuestModel(
+                    4,
+                    "СФИНКСЫ",
+                    QuestStatus.completed,
+                    "Петрога",
+                    "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
+                ),
+                QuestModel(
+                    4,
+                    "СФИНКСЫ",
+                    QuestStatus.completed,
+                    "Петрога",
+                    "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
+                ),
+                QuestModel(
+                    4,
+                    "СФИНКСЫ",
+                    QuestStatus.completed,
+                    "Петрога",
+                    "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
+                ),
+                QuestModel(
+                    4,
+                    "СФИНКСЫ",
+                    QuestStatus.completed,
+                    "Петрога",
+                    "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
+                )
+            )
+        )
         mListView.adapter = mQuestsList
 
         mListView.setOnItemClickListener { parent, view_, position, item_id ->
@@ -85,7 +126,9 @@ class QuestsFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_quests, container, false)
     }
