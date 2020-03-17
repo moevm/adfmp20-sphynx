@@ -18,6 +18,12 @@ android {
     }
 
     buildTypes {
+
+//        debug{
+//            resValue "string", "google_maps_key", "AIzaSyDZ6g5AOhCRaJO8f_wO5JK7KtEen3Swnx8"
+////                    (project.findProperty("GOOGLE_MAPS_API_KEY") ?: "")
+//        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -38,11 +44,16 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     // Firebase
-    implementation 'com.google.firebase:firebase-analytics:17.2.2'
-    implementation 'com.google.firebase:firebase-auth:19.2.0'
-    implementation 'com.google.android.gms:play-services-auth:17.0.0'
+    implementation 'com.google.firebase:firebase-analytics:17.2.3'
+    implementation 'com.google.firebase:firebase-auth:19.3.0'
     implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
 
     //noinspection GradleDependency
     implementation 'com.google.android.material:material:1.0.0-beta01'
+    implementation 'com.google.android.gms:play-services-auth:17.0.0'
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.google.android.gms:play-services-places:17.0.0'
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
+
+
 }

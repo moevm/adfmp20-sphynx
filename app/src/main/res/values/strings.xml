@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Geoquest</string>
+<!--    <string name="google_maps_key">AIzaSyDZ6g5AOhCRaJO8f_wO5JK7KtEen3Swnx8</string>-->
+
 
     <string name="bottom_menu_1">Квесты</string>
     <string name="bottom_menu_2">Карта</string>

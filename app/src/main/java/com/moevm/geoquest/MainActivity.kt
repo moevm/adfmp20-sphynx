@@ -2,31 +2,54 @@ package com.moevm.geoquest
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), QuestsFragment.OnHeadlineSelectedListener {
+
+    lateinit var questFragement: QuestsFragment
+    lateinit var mapFragement: MapFragment
+    lateinit var profileFragement: ProfileFragment
+    lateinit var bottomView: BottomNavigationView
+
+    companion object {
+        private const val STATE_SAVE_STATE = "save_state"
+        private const val STATE_KEEP_FRAGS = "keep_frags"
+        private const val STATE_HELPER = "helper"
+    }
+
+    private lateinit var stateHelper: FragmentStateHelper
+
+    private val fragments = mutableMapOf<Int, Fragment>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val bottomView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        questFragement = QuestsFragment()
+        mapFragement = MapFragment()
+        profileFragement = ProfileFragment()
+
+        bottomView = findViewById(R.id.bottom_navigation)
+
         supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, QuestsFragment()).commit()
+            .replace(R.id.fragment_container, questFragement).commit()
+
+        Log.d("Sending_data", "fragments: ${supportFragmentManager.fragments}")
 
         bottomView.setOnNavigationItemSelectedListener {
             var selectedFragment: Fragment? = null
             when (it.itemId) {
 
                 R.id.bottom_navigation_quests -> {
-                    selectedFragment = QuestsFragment()
+                    selectedFragment = questFragement
                 }
                 R.id.bottom_navigation_map -> {
-                    selectedFragment = MapFragment()
+                    selectedFragment = mapFragement
                 }
                 R.id.bottom_navigation_profile -> {
-                    selectedFragment = ProfileFragment()
+                    selectedFragment = profileFragement
                 }
             }
             return@setOnNavigationItemSelectedListener if (selectedFragment != null) {
@@ -36,16 +59,28 @@ class MainActivity : AppCompatActivity() {
             } else
                 false
         }
-
     }
 
+    override fun onQuestSelected(position: Long) {
+        Log.d("Sending_data", "Quest selected MainActivity: $position")
+        var data = mapFragement.arguments
+        if (data == null)
+            data = Bundle()
+        data.putLong("questId", position)
 
-//    override fun onMapReady(googleMap: GoogleMap) {
-//        mMap = googleMap
-//
-//        // Add a marker in Sydney and move the camera
-//        val saintP = LatLng(59.9, 31.3)
-//        mMap.addMarker(MarkerOptions().position(saintP).title("Marker in SaintP"))
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(saintP))
-//    }
+        mapFragement.arguments = data
+
+        bottomView.selectedItemId = R.id.bottom_navigation_map
+//        supportFragmentManager.beginTransaction()
+//            .replace(R.id.fragment_container, mapFragement).commit()
+    }
+
+    override fun onAttachFragment(fragment: Fragment) {
+        Log.d("Sending_data", "Quest Fragment attached")
+
+        if (fragment is QuestsFragment) {
+            fragment.setOnQuestSelectedListener(this)
+        }
+    }
+
 }

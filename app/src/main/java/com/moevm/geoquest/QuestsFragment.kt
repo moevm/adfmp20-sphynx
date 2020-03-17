@@ -1,7 +1,7 @@
 package com.moevm.geoquest
 
 import android.app.AlertDialog
-import android.content.DialogInterface
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -16,38 +16,47 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-
 class QuestsFragment : Fragment() {
-
+    internal lateinit var callback: OnHeadlineSelectedListener
     private lateinit var mListView: ListView
-    private lateinit var mQuestsArray: Array<String>
-    private lateinit var mQuestsList: ArrayAdapter<String>
+    private lateinit var mQuestsArray: Array<Int>
+    private lateinit var mQuestsList: ArrayAdapter<Int>
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    fun setOnQuestSelectedListener(callback: OnHeadlineSelectedListener) {
+        this.callback = callback
+    }
 
-        if (view == null)
-        {
-            Log.d("CHECKER", "Empty view in fragment")
-        }
+    interface OnHeadlineSelectedListener {
+        fun onQuestSelected(position: Long)
+    }
 
-        mListView = view!!.findViewById(R.id.quests_list)
-        mQuestsArray = Array(10){"$it"}
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_quests, container, false)
+    }
 
-        val btnToLogin = view?.findViewById<Button>(R.id.to_login)
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        mListView = view.findViewById(R.id.quests_list)
+        mQuestsArray = Array(10){it+1}
+
+        val btnToLogin = view.findViewById<Button>(R.id.to_login)
         btnToLogin?.setOnClickListener {
             startActivity(Intent(context, LoginActivity::class.java))
         }
 
-        val btnGiveUpQuest = view?.findViewById<TextView>(R.id.give_up_quest)
+        val btnGiveUpQuest = view.findViewById<TextView>(R.id.give_up_quest)
         btnGiveUpQuest?.setOnClickListener {
             val dialogBuilder = AlertDialog.Builder(context)
             dialogBuilder.setMessage(getString(R.string.sure_give_up_quest_title))
                 .setCancelable(false)
                 .setPositiveButton(getString(R.string.dialog_yes)) { dialog, id ->
                     Log.d("CHECKER", "Give up quest")
-                    view?.findViewById<ConstraintLayout>(R.id.current_quest_container)?.visibility = View.GONE
-                    view?.findViewById<TextView>(R.id.current_quest_name)?.text = ""
+                    view.findViewById<ConstraintLayout>(R.id.current_quest_container)?.visibility = View.GONE
+                    view.findViewById<TextView>(R.id.current_quest_name)?.text = ""
                 }
                 .setNegativeButton(getString(R.string.dialog_no)) { dialog, id -> dialog.cancel()
                     Log.d("CHECKER", "Don't give up quest")
@@ -65,11 +74,12 @@ class QuestsFragment : Fragment() {
             dialogBuilder.setMessage("questName")
                 .setCancelable(false)
                 .setPositiveButton(getString(R.string.dialog_yes)) { dialog, id ->
-//                    view?.findViewById<ConstraintLayout>(R.id.current_quest_container)?.visibility = View.VISIBLE
-//                    view?.findViewById<TextView>(R.id.current_quest_name)?.text = item_id.toString()
+                    Log.d("Sending_data","Quest selected questList: $item_id")
+                    callback.onQuestSelected(item_id)
+
 //                    TODO(Save visibility of selected quest)
-                    val bnb = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
-                    bnb?.selectedItemId = R.id.bottom_navigation_map
+                    view.findViewById<ConstraintLayout>(R.id.current_quest_container)?.visibility = View.VISIBLE
+                    view.findViewById<TextView>(R.id.current_quest_name)?.text = item_id.toString()
                 }
                 .setNegativeButton(getString(R.string.dialog_no)) { dialog, id -> dialog.cancel()
                 }
@@ -79,11 +89,6 @@ class QuestsFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_quests, container, false)
-    }
 }
 
 
