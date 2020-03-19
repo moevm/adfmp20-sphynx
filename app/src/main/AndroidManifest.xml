@@ -20,9 +20,6 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBAlTuePtKwskQjwRMvLaa3dRxPjwKKiiI" />
-<!--        <meta-data-->
-<!--            android:name="com.google.android.maps.v2.API_KEY"-->
-<!--            android:value="AIzaSyDZ6g5AOhCRaJO8f_wO5JK7KtEen3Swnx8" />-->
 
         <activity android:name=".MainActivity">
             <intent-filter>
