@@ -8,76 +8,73 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity(), QuestsFragment.OnHeadlineSelectedListener {
 
-    lateinit var questFragement: QuestsFragment
-    lateinit var mapFragement: MapFragment
-    lateinit var profileFragement: ProfileFragment
+//    lateinit var questFragement: QuestsFragment
+//    lateinit var mapFragement: MapFragment
+//    lateinit var profileFragement: ProfileFragment
     lateinit var bottomView: BottomNavigationView
-
-    companion object {
-        private const val STATE_SAVE_STATE = "save_state"
-        private const val STATE_KEEP_FRAGS = "keep_frags"
-        private const val STATE_HELPER = "helper"
-    }
 
     private lateinit var stateHelper: FragmentStateHelper
 
     private val fragments = mutableMapOf<Int, Fragment>()
 
+    private fun saveCurrentFragmentState() {
+        fragments[bottomView.selectedItemId]?.let { oldFragment->
+            stateHelper.saveState(oldFragment, bottomView.selectedItemId)
+        }
+    }
+
+    private val navigationSelectionListener = BottomNavigationView.OnNavigationItemSelectedListener {
+        val newFragment = fragments[it.itemId] ?: QuestsFragment()
+        Log.d("bottomNavView", "fragment: $newFragment")
+        fragments[it.itemId] = newFragment
+
+        saveCurrentFragmentState()
+        stateHelper.restoreState(newFragment, it.itemId)
+
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, newFragment)
+            .commitNowAllowingStateLoss()
+
+
+        true
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        questFragement = QuestsFragment()
-        mapFragement = MapFragment()
-        profileFragement = ProfileFragment()
-
         bottomView = findViewById(R.id.bottom_navigation)
+        stateHelper = FragmentStateHelper(supportFragmentManager)
 
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, questFragement).commit()
+        fragments[R.id.bottom_navigation_quests] = QuestsFragment()
+        fragments[R.id.bottom_navigation_map] = MapFragment()
+        fragments[R.id.bottom_navigation_profile] = ProfileFragment()
+
+        if (fragments[R.id.bottom_navigation_quests] != null)
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragments[R.id.bottom_navigation_quests] as Fragment).commit()
+
 
         Log.d("Sending_data", "fragments: ${supportFragmentManager.fragments}")
 
-        bottomView.setOnNavigationItemSelectedListener {
-            var selectedFragment: Fragment? = null
-            when (it.itemId) {
-
-                R.id.bottom_navigation_quests -> {
-                    selectedFragment = questFragement
-                }
-                R.id.bottom_navigation_map -> {
-                    selectedFragment = mapFragement
-                }
-                R.id.bottom_navigation_profile -> {
-                    selectedFragment = profileFragement
-                }
-            }
-            return@setOnNavigationItemSelectedListener if (selectedFragment != null) {
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, selectedFragment).commit()
-                true
-            } else
-                false
-        }
+        bottomView.setOnNavigationItemSelectedListener(navigationSelectionListener)
     }
 
     override fun onQuestSelected(position: Long) {
         Log.d("Sending_data", "Quest selected MainActivity: $position")
-        var data = mapFragement.arguments
+        var data = fragments[R.id.bottom_navigation_map]?.arguments
         if (data == null)
             data = Bundle()
         data.putLong("questId", position)
 
-        mapFragement.arguments = data
+        fragments[R.id.bottom_navigation_map]?.arguments = data
 
         bottomView.selectedItemId = R.id.bottom_navigation_map
-//        supportFragmentManager.beginTransaction()
-//            .replace(R.id.fragment_container, mapFragement).commit()
     }
 
     override fun onAttachFragment(fragment: Fragment) {
         Log.d("Sending_data", "Quest Fragment attached")
-
         if (fragment is QuestsFragment) {
             fragment.setOnQuestSelectedListener(this)
         }

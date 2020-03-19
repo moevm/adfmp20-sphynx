@@ -37,7 +37,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         mapFragment = v as SupportMapFragment
         mapFragment.getMapAsync(this)
         questId = arguments?.getLong("questId");
-        Log.d("Sending_data", "args: $questId")
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -47,17 +46,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             .fillColor(0x7f0000ff)
 
         val saintP = LatLng(59.93861111111111, 30.31388888888889)
-
+        Log.d("Sending_data", "quest id: $questId")
         if (questId != null) {
-            val step = questId ?: 1
+            val newStepId = 10
+            val step = 360/newStepId
 
-                for (i in 0..(360 / step)) {
-                    rectOptions.add(
-                        saintP + LatLng(
-                            0.005 * cos(i * step * PI / 180),
-                            0.01 * sin(i * step * PI / 180)
-                        )
-                    )
+                for (i in 0..newStepId) {
+                    val shift = LatLng(
+                        0.005 * cos(i * step * PI / 180),
+                        0.01 * sin(i * step * PI / 180))
+                    Log.d("Sending_data", "steps: $i, shift: $shift")
+                    rectOptions.add( saintP + shift )
                 }
 
             googleMap.addPolygon(rectOptions)
