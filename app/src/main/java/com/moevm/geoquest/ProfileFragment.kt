@@ -44,6 +44,10 @@ class ProfileFragment : Fragment() {
             mCompletedQuests
         )
 
+        listView.setOnItemClickListener { parent, view, position, id ->
+            startActivity(Intent(context, RecordsActivity::class.java))
+        }
+
 
         exitButton.setOnClickListener {
             startActivity(Intent(context, LoginActivity::class.java))
