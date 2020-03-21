@@ -33,5 +33,4 @@ class QuestsArrayAdapter(context: Context, resource: Int, private val quests: Ar
         locationView.text = quest.location
         return customView
     }
-
 }

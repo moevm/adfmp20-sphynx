@@ -24,5 +24,7 @@
     <string name="dialog_no">Нет</string>
     <string name="quests_list">Список квестов</string>
     <string name="how_to_play">Как играть?</string>
+    <string name="profile">Профиль</string>
+    <string name="completed_quests">Пройденные квесты</string>
 
 </resources>
