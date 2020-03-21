@@ -8,7 +8,7 @@ import com.moevm.geoquest.models.LeaderModel
 
 class RecordsActivity : AppCompatActivity() {
 
-    lateinit var mLeaders : Array<LeaderModel>
+    lateinit var mLeaders: Array<LeaderModel>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,7 +19,7 @@ class RecordsActivity : AppCompatActivity() {
         backButton.setOnClickListener {
             finish()
         }
-        mLeaders = Array(30) {LeaderModel(it, "Новэльны", it + 1, 34232123)}
+        mLeaders = Array(30) { LeaderModel(it, "Новэльны", it + 1, 34232123) }
 
         val leadersList = findViewById<ListView>(R.id.leaders_list)
         leadersList.adapter = LeadersArrayAdapter(this, R.layout.leader_list_item, mLeaders)
