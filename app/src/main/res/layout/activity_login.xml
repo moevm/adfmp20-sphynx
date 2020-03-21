@@ -85,7 +85,7 @@
         android:layout_marginBottom="@dimen/double_margin"
         android:background="@drawable/stroke_button"
         android:text="@string/sign_in_with_google"
-        android:textColor="#77000000"
+        android:textColor="@color/white"
         android:textSize="@dimen/button_text"
         app:layout_constraintBottom_toTopOf="@id/sign_up_layout" />
 

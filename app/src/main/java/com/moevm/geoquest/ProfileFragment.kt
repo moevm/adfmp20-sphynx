@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ListView
 import androidx.fragment.app.Fragment
+import com.google.firebase.auth.FirebaseAuth
 import com.moevm.geoquest.models.QuestModel
 import com.moevm.geoquest.models.QuestStatus
 
@@ -50,6 +51,7 @@ class ProfileFragment : Fragment() {
 
 
         exitButton.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
             startActivity(Intent(context, LoginActivity::class.java))
         }
     }

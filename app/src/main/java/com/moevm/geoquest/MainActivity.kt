@@ -1,16 +1,19 @@
 package com.moevm.geoquest
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity(), QuestsFragment.OnHeadlineSelectedListener {
 
 //    lateinit var questFragement: QuestsFragment
 //    lateinit var mapFragement: MapFragment
 //    lateinit var profileFragement: ProfileFragment
+    lateinit var auth: FirebaseAuth
     lateinit var bottomView: BottomNavigationView
 
     private lateinit var stateHelper: FragmentStateHelper
@@ -43,7 +46,9 @@ class MainActivity : AppCompatActivity(), QuestsFragment.OnHeadlineSelectedListe
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        auth = FirebaseAuth.getInstance()
+        if(auth.currentUser == null)
+            startActivity(Intent(this, LoginActivity::class.java))
         bottomView = findViewById(R.id.bottom_navigation)
         stateHelper = FragmentStateHelper(supportFragmentManager)
 
