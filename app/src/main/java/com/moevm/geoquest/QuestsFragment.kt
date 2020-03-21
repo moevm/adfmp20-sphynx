@@ -13,12 +13,14 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.moevm.geoquest.models.QuestModel
 import com.moevm.geoquest.models.QuestStatus
+import com.squareup.picasso.Picasso
 
 
 class QuestsFragment : Fragment() {
 
     private lateinit var mListView: ListView
-    private lateinit var mQuestsArray: Array<String>
+    private lateinit var mQuestsArray: Array<QuestModel>
+    private lateinit var mSelectedQuest: QuestModel
     private lateinit var mQuestsList: ArrayAdapter<QuestModel>
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -29,7 +31,17 @@ class QuestsFragment : Fragment() {
         }
 
         mListView = view!!.findViewById(R.id.quests_list)
-        mQuestsArray = Array(10) { "$it" }
+        mQuestsArray = Array(30) {
+            QuestModel(
+                4,
+                "СФИНКСЫ",
+                QuestStatus.completed,
+                "Петрога",
+                "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
+            )
+        }
+
+        mSelectedQuest = mQuestsArray.first()
 
         val btnToLogin = view?.findViewById<Button>(R.id.to_login)
         btnToLogin?.setOnClickListener {
@@ -56,46 +68,11 @@ class QuestsFragment : Fragment() {
             alert.show()
         }
 
+
         mQuestsList = QuestsArrayAdapter(
             context!!,
             R.layout.quest_list_item,
-            arrayOf(
-                QuestModel(
-                    4,
-                    "СФИНКСЫ",
-                    QuestStatus.completed,
-                    "Петрога",
-                    "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
-                ),
-                QuestModel(
-                    4,
-                    "СФИНКСЫ",
-                    QuestStatus.completed,
-                    "Петрога",
-                    "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
-                ),
-                QuestModel(
-                    4,
-                    "СФИНКСЫ",
-                    QuestStatus.completed,
-                    "Петрога",
-                    "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
-                ),
-                QuestModel(
-                    4,
-                    "СФИНКСЫ",
-                    QuestStatus.completed,
-                    "Петрога",
-                    "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
-                ),
-                QuestModel(
-                    4,
-                    "СФИНКСЫ",
-                    QuestStatus.completed,
-                    "Петрога",
-                    "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
-                )
-            )
+            mQuestsArray
         )
         mListView.adapter = mQuestsList
 
@@ -123,6 +100,17 @@ class QuestsFragment : Fragment() {
         infoButton.setOnClickListener {
             startActivity(Intent(context, InfoActivity::class.java))
         }
+
+        val imageView = view!!.findViewById<ImageView>(R.id.image_view)
+
+        Picasso.get()
+            .load(mSelectedQuest.imageUrl)
+            .into(imageView)
+
+        val nameView = view!!.findViewById<TextView>(R.id.name)
+        nameView.text = mSelectedQuest.name
+        val locationView = view!!.findViewById<TextView>(R.id.location)
+        locationView.text = mSelectedQuest.location
     }
 
     override fun onCreateView(
