@@ -19,7 +19,9 @@
         android:layout_marginHorizontal="@dimen/default_margin"
         android:layout_marginBottom="72dp"
         app:cardCornerRadius="8dp"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:cardBackgroundColor="@color/colder"
+        >
 
         <TextView
             android:id="@+id/status"

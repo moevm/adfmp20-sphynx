@@ -7,4 +7,6 @@
     <color name="transparent">#00000000</color>
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
+    <color name="colder">#D457E1FF</color>
+    <color name="questArea">#3303AD00</color>
 </resources>
