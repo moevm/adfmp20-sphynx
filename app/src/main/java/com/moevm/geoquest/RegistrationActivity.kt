@@ -19,7 +19,7 @@ class RegistrationActivity : AppCompatActivity() {
         setContentView(R.layout.activity_registration)
         auth = FirebaseAuth.getInstance()
 
-        val emailField =findViewById<TextInputLayout>(R.id.login_input).editText
+        val emailField = findViewById<TextInputLayout>(R.id.login_input).editText
         val passField = findViewById<TextInputLayout>(R.id.password_input).editText
         val passConfirmField = findViewById<TextInputLayout>(R.id.password_confirmation).editText
 
@@ -28,8 +28,7 @@ class RegistrationActivity : AppCompatActivity() {
             val pass = passField?.text.toString()
             val passConf = passConfirmField?.text.toString()
             Log.d("AUTHORIZATION", "email: $email, pass: $pass, conf:$passConf")
-            if( email.isNotBlank() && pass.isNotBlank() && pass == passConf )
-            {
+            if (email.isNotBlank() && pass.isNotBlank() && pass == passConf) {
                 auth.createUserWithEmailAndPassword(email, pass)
                     .addOnCompleteListener(this) { task ->
                         if (task.isSuccessful) {
@@ -39,15 +38,16 @@ class RegistrationActivity : AppCompatActivity() {
                             updateUI(user)
                         } else {
                             // If sign in fails, display a message to the user.
-                            Toast.makeText(baseContext, "Authentication failed.",
-                                Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                baseContext, "Authentication failed.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             Log.w("AUTHORIZATION", "createUserWithEmail:failure", task.exception)
                             updateUI(null)
                         }
                     }
 
-            }
-            else{
+            } else {
                 Log.d("AUTHORIZATION", "Confirmation not equal password")
             }
         }
@@ -60,9 +60,9 @@ class RegistrationActivity : AppCompatActivity() {
         updateUI(currentUser)
     }
 
-    private fun updateUI(user: FirebaseUser?){
+    private fun updateUI(user: FirebaseUser?) {
         Log.d("AUTHORIZATION", "current user is $user")
-        if(user != null)
+        if (user != null)
             startActivity(Intent(this, MainActivity::class.java))
     }
 
