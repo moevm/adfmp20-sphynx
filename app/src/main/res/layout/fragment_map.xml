@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -12,5 +12,55 @@
         android:layout_height="match_parent"
         tools:context=".MainActivity">
     </fragment>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginHorizontal="@dimen/default_margin"
+        android:layout_marginBottom="72dp"
+        app:cardCornerRadius="8dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Холоднее"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="42dp"
+        android:layout_margin="@dimen/default_margin"
+        android:layout_marginHorizontal="@dimen/default_margin"
+        android:padding="@dimen/small_margin"
+        app:cardCornerRadius="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/statistics"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="@dimen/small_margin"
+            android:gravity="center"
+            android:text="43 мин 13/37"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
+    </androidx.cardview.widget.CardView>
+
+    <ImageButton
+        android:id="@+id/area_button"
+        android:background="@drawable/circle_button"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_margin="@dimen/default_margin"
+        android:src="@drawable/ic_layers"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

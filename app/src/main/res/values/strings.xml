@@ -19,10 +19,14 @@
     <string name="records_table">Таблица рекордов</string>
     <string name="current_quest_title">Текущий квест</string>
     <string name="give_up_quest">Отказаться</string>
-<!--    <string name="sure_start_quest">Вы уверены, что хотите начать квест?</string>-->
+    <!--    <string name="sure_start_quest">Вы уверены, что хотите начать квест?</string>-->
     <string name="sure_start_quest_title">Начать квест?</string>
     <string name="sure_give_up_quest_title">Отказаться от квеста?</string>
     <string name="dialog_yes">Да</string>
     <string name="dialog_no">Нет</string>
+    <string name="quests_list">Список квестов</string>
+    <string name="how_to_play">Как играть?</string>
+    <string name="profile">Профиль</string>
+    <string name="completed_quests">Пройденные квесты</string>
 
 </resources>

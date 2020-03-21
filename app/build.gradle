@@ -43,6 +43,8 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.makeramen:roundedimageview:2.3.0'
     // Firebase
     implementation 'com.google.firebase:firebase-analytics:17.2.3'
     implementation 'com.google.firebase:firebase-auth:19.3.0'
