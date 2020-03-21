@@ -43,21 +43,16 @@ class QuestsFragment : Fragment() {
 
         mSelectedQuest = mQuestsArray.first()
 
-        val btnToLogin = view?.findViewById<Button>(R.id.to_login)
-        btnToLogin?.setOnClickListener {
-            startActivity(Intent(context, LoginActivity::class.java))
-        }
-
         val btnGiveUpQuest = view?.findViewById<TextView>(R.id.give_up_quest)
         btnGiveUpQuest?.setOnClickListener {
             val dialogBuilder = AlertDialog.Builder(context)
             dialogBuilder.setMessage(getString(R.string.sure_give_up_quest_title))
                 .setCancelable(false)
                 .setPositiveButton(getString(R.string.dialog_yes)) { dialog, id ->
-                    Log.d("CHECKER", "Give up quest")
-                    view?.findViewById<ConstraintLayout>(R.id.current_quest_container)?.visibility =
-                        View.GONE
-                    view?.findViewById<TextView>(R.id.current_quest_name)?.text = ""
+//                    Log.d("CHECKER", "Give up quest")
+//                    view?.findViewById<ConstraintLayout>(R.id.current_quest_container)?.visibility =
+//                        View.GONE
+//                    view?.findViewById<TextView>(R.id.current_quest_name)?.text = ""
                 }
                 .setNegativeButton(getString(R.string.dialog_no)) { dialog, id ->
                     dialog.cancel()

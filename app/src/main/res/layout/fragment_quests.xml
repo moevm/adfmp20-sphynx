@@ -75,36 +75,11 @@
         android:text="2131231 квестов для вас"
         android:textSize="16sp" />
 
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/current_quest_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/title">
-
-        <TextView
-            android:id="@+id/current_quest_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="@+id/give_up_container" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
     <ListView
         android:id="@+id/quests_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
         android:divider="@color/transparent"
         android:dividerHeight="@dimen/default_margin"
         app:layout_constraintTop_toBottomOf="@+id/info_button" />
-
-    <Button
-        android:id="@+id/to_login"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="to login"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent" />
 </LinearLayout>
