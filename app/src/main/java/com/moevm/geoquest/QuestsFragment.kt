@@ -15,20 +15,26 @@ import com.squareup.picasso.Picasso
 
 
 class QuestsFragment : Fragment() {
-    private lateinit var callback: OnHeadlineSelectedListener
+    private lateinit var callback: OnQuestActionListener
+//    private lateinit var callbackQuestGiveUp: OnQuestActionListener
     private lateinit var mListView: ListView
     private lateinit var mQuestsArray: Array<QuestModel>
     private var mSelectedQuestId: Int = -1
     private lateinit var mQuestsList: ArrayAdapter<QuestModel>
     private var mIsQuestSelected: Boolean = false
 
-    interface OnHeadlineSelectedListener {
+    interface OnQuestActionListener {
         fun onQuestSelected(position: Long)
+        fun onQuestGiveUp()
     }
 
-    fun setOnQuestSelectedListener(callback: OnHeadlineSelectedListener) {
+    fun setOnQuestActionListener(callback: OnQuestActionListener) {
         this.callback = callback
     }
+
+//    fun setOnQuestGiveUpListener(callback: OnQuestActionListener) {
+//        this.callbackQuestGiveUp = callback
+//    }
 
     private val questSelectListener = AdapterView.OnItemClickListener { parent, view_, position, item_id ->
         val dialogBuilder = AlertDialog.Builder(context)
@@ -56,6 +62,7 @@ class QuestsFragment : Fragment() {
             .setPositiveButton(getString(R.string.dialog_yes)) { dialog, id ->
                 mIsQuestSelected = false
                 updateCurrentQuestVisible(view!!)
+                callback.onQuestGiveUp()
             }
             .setNegativeButton(getString(R.string.dialog_no)) { dialog, id ->
                 dialog.cancel()

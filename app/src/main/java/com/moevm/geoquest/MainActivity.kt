@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 
-class MainActivity : AppCompatActivity(), QuestsFragment.OnHeadlineSelectedListener {
+class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
 
 //    lateinit var questFragement: QuestsFragment
 //    lateinit var mapFragement: MapFragment
@@ -78,10 +78,18 @@ class MainActivity : AppCompatActivity(), QuestsFragment.OnHeadlineSelectedListe
         bottomView.selectedItemId = R.id.bottom_navigation_map
     }
 
+    override fun onQuestGiveUp() {
+        var data = fragments[R.id.bottom_navigation_map]?.arguments
+        if (data == null)
+            data = Bundle()
+        data.putLong("questId", -1)
+    }
+
     override fun onAttachFragment(fragment: Fragment) {
         Log.d("Sending_data", "Quest Fragment attached")
         if (fragment is QuestsFragment) {
-            fragment.setOnQuestSelectedListener(this)
+            fragment.setOnQuestActionListener(this)
+//            fragment.setOnQuestGiveUpListener(this)
         }
     }
 

@@ -47,7 +47,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var gmap: GoogleMap
-    private var questId: Long? = null
+    private var questId: Long = -1
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -80,13 +80,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState)
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
 
+        questId = arguments?.getLong("questId") ?: -1
+
+        Log.d("currentLocation", "questId: $questId")
+
         mLocationPermissionGranted = checkLocationPermission()
         if(mLocationPermissionGranted)
         {
             Log.d("currentLocation", "View created, permissions granted, call draw and get location")
             getLastLocation()
             Log.d("currentLocation", "draw called")
-            drawMyLocation()
+            initMapAsync()
             Log.d("currentLocation", "get location called")
         }
         else{
@@ -95,10 +99,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private val onShowQuestAreaListener = View.OnClickListener {
-        questArea = if (questArea == null){
+        questArea = if (questArea == null && questId>=0){
             gmap.addPolygon(getQuestArea())
         } else {
-            questArea!!.remove()
+            questArea?.remove()
             null
         }
     }
@@ -136,7 +140,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         mLocationRequest.interval = 5000
         mLocationRequest.fastestInterval = 1000
-//        mLocationRequest.numUpdates = 1
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
         mFusedLocationClient.requestLocationUpdates(
             mLocationRequest, mLocationCallback,
@@ -150,12 +153,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             if(locationResult == null)
                 return
             val mLastLocation: Location = locationResult.lastLocation
-            Log.d("currentLocation", "last location: $mLastLocation")
+//            Log.d("currentLocation", "last location: $mLastLocation")
         }
     }
-
-
-
 
     private fun getQuestArea(): PolygonOptions {
         //TODO get quest area from db
@@ -167,11 +167,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
      }
 
     override fun onMapReady(googleMap: GoogleMap) {
-        Log.d("CurrentLocation", "onMapReady")
+        Log.d("currentLocation", "onMapReady")
         gmap = googleMap
         if(mLocationPermissionGranted) {
             gmap.isMyLocationEnabled = true
-            if (questId != null) {
+            Log.d("currentLocation", "arguments: $arguments")
+            if ( questId >= 0 ) {
                 val saintP = DEFAULT_LOCATION
                 googleMap.addMarker(MarkerOptions().position(saintP).title("Marker in SaintP"))
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(saintP, 12.0f))
@@ -182,11 +183,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    private fun drawMyLocation(){
+    private fun initMapAsync(){
         val v: Fragment = childFragmentManager.findFragmentById(R.id.mapFragment) ?: return
         mapFragment = v as SupportMapFragment
         mapFragment.getMapAsync(this)
-        questId = arguments?.getLong("questId")
+        questId = arguments?.getLong("questId") ?: -1
         Log.d("mapAction", "questId: $questId")
     }
 
