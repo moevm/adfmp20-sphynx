@@ -1,28 +1,34 @@
 package com.moevm.geoquest
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
+import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.places.Place
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
 
 
 class MapFragment : Fragment(), OnMapReadyCallback {
@@ -36,14 +42,33 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private var mLocationPermissionGranted = false
-    private var mLastKnownLocation: Place? = null
-    private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
+    private lateinit var mFusedLocationClient: FusedLocationProviderClient
     private var questArea: Polygon? = null
-    private var easterEggPolyline: Polyline? = null
 
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var gmap: GoogleMap
     private var questId: Long? = null
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        view?.findViewById<ImageButton>(R.id.area_button)?.setOnClickListener(onShowQuestAreaListener)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (activity == null) {
+            Log.d("currentLocation", "on CREATE mFusedLocationClient creation, activity is null")
+        }
+        else {
+            Log.d(
+                "currentLocation",
+                "on CREATE mFusedLocationClient creation, activity is not null"
+            )
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
+        }
+
+
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -51,43 +76,86 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
-    private val onShowQuestAreaListener = View.OnClickListener {
-        if (questArea == null){
-            questArea = gmap.addPolygon(getQuestArea())
-//            easterEggPolyline = gmap.addPolyline(getEasterEggPolyline())
-        } else {
-            questArea!!.remove()
-//            easterEggPolyline!!.remove()
-            questArea = null
-//            easterEggPolyline = null
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
+
+        mLocationPermissionGranted = checkLocationPermission()
+        if(mLocationPermissionGranted)
+        {
+            Log.d("currentLocation", "View created, permissions granted, call draw and get location")
+            getLastLocation()
+            Log.d("currentLocation", "draw called")
+            drawMyLocation()
+            Log.d("currentLocation", "get location called")
+        }
+        else{
+            requestLocationPermission()
         }
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        view?.findViewById<ImageButton>(R.id.area_button)?.setOnClickListener(onShowQuestAreaListener)
+    private val onShowQuestAreaListener = View.OnClickListener {
+        questArea = if (questArea == null){
+            gmap.addPolygon(getQuestArea())
+        } else {
+            questArea!!.remove()
+            null
+        }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        getLocationPermission()
+    @SuppressLint("MissingPermission")
+    private fun getLastLocation(){
+        if (checkLocationPermission()) {
+            Log.d("currentLocation", "Permissions exist, check enabled location")
+            if (isLocationEnabled()) {
+                Log.d("currentLocation", "Location enabled, add listener")
+                mFusedLocationClient.lastLocation.addOnCompleteListener { task ->
+                    val location: Location? = task.result
+                    requestNewLocationData()
+                    if (location == null) {
+                        Log.d("currentLocation", "Location is null, call new location data")
+                    } else {
+                         Log.d("currentLocation", "current location: $location")
+                    }
+                }
+            } else {
+                Toast.makeText(context, "Turn on location", Toast.LENGTH_LONG).show()
+                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                startActivity(intent)
+            }
+        } else {
+            Log.d("currentLocation", "Permissions has not exist, request")
+            requestLocationPermission()
+        }
     }
 
-//    private fun getEasterEggPolyline(): PolylineOptions{
-//        return PolylineOptions()
-//            .width(1.0f)
-//            .color(0xffff0000.toInt())
-//            .addAll(listOf(
-//                LatLng(59.972102, 30.322887),
-//                LatLng(59.972225, 30.322915),
-//                LatLng(59.972134, 30.323065),
-//                LatLng(59.972239, 30.322974),
-//                LatLng(59.972261, 30.323062),
-//                LatLng(59.972239, 30.322974),
-//                LatLng(59.9721865,30.3230195),
-//                LatLng(59.9722085,30.3229315)
-//            ))
-//    }
+    @SuppressLint("MissingPermission")
+    private fun requestNewLocationData() {
+        Log.d("currentLocation", "configure and run mFusedLocationClient")
+        val mLocationRequest = LocationRequest()
+        mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        mLocationRequest.interval = 5000
+        mLocationRequest.fastestInterval = 1000
+//        mLocationRequest.numUpdates = 1
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
+        mFusedLocationClient.requestLocationUpdates(
+            mLocationRequest, mLocationCallback,
+            Looper.myLooper()
+        )
+    }
+
+    private val mLocationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult?) {
+            super.onLocationResult(locationResult)
+            if(locationResult == null)
+                return
+            val mLastLocation: Location = locationResult.lastLocation
+            Log.d("currentLocation", "last location: $mLastLocation")
+        }
+    }
+
+
+
 
     private fun getQuestArea(): PolygonOptions {
         //TODO get quest area from db
@@ -101,45 +169,46 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         Log.d("CurrentLocation", "onMapReady")
         gmap = googleMap
-        gmap.isMyLocationEnabled = true
-        if (questId != null) {
-            val saintP = DEFAULT_LOCATION
-            googleMap.addMarker(MarkerOptions().position(saintP).title("Marker in SaintP"))
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(saintP, 12.0f))
+        if(mLocationPermissionGranted) {
+            gmap.isMyLocationEnabled = true
+            if (questId != null) {
+                val saintP = DEFAULT_LOCATION
+                googleMap.addMarker(MarkerOptions().position(saintP).title("Marker in SaintP"))
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(saintP, 12.0f))
+            }
+        }
+        else{
+            permissionInfoAndRequest()
         }
     }
 
     private fun drawMyLocation(){
-        Log.d("CurrentLocation", "Draw my location called")
         val v: Fragment = childFragmentManager.findFragmentById(R.id.mapFragment) ?: return
         mapFragment = v as SupportMapFragment
         mapFragment.getMapAsync(this)
-        Log.d("CurrentLocation", "get map async called")
         questId = arguments?.getLong("questId")
+        Log.d("mapAction", "questId: $questId")
     }
 
+    private fun checkLocationPermission(): Boolean{
+        return ActivityCompat
+            .checkSelfPermission(activity!!, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED &&  ActivityCompat
+            .checkSelfPermission(activity!!, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED
+    }
 
-    private fun getLocationPermission(){
-        //TODO check permissions in fragment
-        if (activity == null)
-            return
-        val thisActivity = activity as Activity
-        val permissionAccessCoarseLocationApproved = ActivityCompat
-            .checkSelfPermission(thisActivity, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED
-        val permissionAccessFineLocationApproved = ActivityCompat
-            .checkSelfPermission(thisActivity, Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED
-        if (permissionAccessCoarseLocationApproved && permissionAccessFineLocationApproved) {
-//            ACCESS_BACKGROUND_LOCATION
-            drawMyLocation()
-        } else {
-            this.requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION),
-                REQUEST_PERMISSION_COARSE
-            )
-        }
+    private fun requestLocationPermission() {
+        this.requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+            REQUEST_PERMISSION_COARSE)
+    }
+
+    private fun isLocationEnabled(): Boolean {
+        val locationManager: LocationManager = context?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
     override fun onRequestPermissionsResult(
@@ -149,19 +218,32 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         Log.d("LocationPermissions", "on request result")
-        when(requestCode){
+        when (requestCode) {
             REQUEST_PERMISSION_COARSE -> {
                 if (grantResults.isNotEmpty()
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED
                 ) {
                     Log.d("LocationPermissions", "permissions granted")
                     mLocationPermissionGranted = true
-                } else {
-                    Log.e("LocationPermissions", "access coarse & background location wasn't granted")
                 }
-                return
             }
         }
+    }
+
+    private fun permissionInfoAndRequest(){
+        val dialogBuilder = AlertDialog.Builder(context)
+        dialogBuilder
+            .setMessage(getString(R.string.request_location_permissions))
+            .setCancelable(false)
+            .setPositiveButton(getString(R.string.dialog_yes)) { dialog, id ->
+                requestLocationPermission()
+            }
+            .setNegativeButton(getString(R.string.dialog_no)) { dialog, id ->
+                dialog.cancel()
+            }
+        val alert = dialogBuilder.create()
+        alert.setTitle(getString(R.string.request_location_permissions_title))
+        alert.show()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

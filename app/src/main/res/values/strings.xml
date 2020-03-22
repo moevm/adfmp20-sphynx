@@ -28,5 +28,9 @@
     <string name="how_to_play">Как играть?</string>
     <string name="profile">Профиль</string>
     <string name="completed_quests">Пройденные квесты</string>
+    <string name="request_location_permissions_title">Разрешения приложения</string>
+    <string name="request_location_permissions">Без доступа к местроположению устройства невозможно проходить квесты. Разрешить доступ?</string>
+
+
 
 </resources>
