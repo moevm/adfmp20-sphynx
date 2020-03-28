@@ -18,7 +18,7 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
 
-    companion object{
+    companion object {
         private const val RC_SIGN_IN: Int = 123
     }
 
@@ -55,13 +55,17 @@ class LoginActivity : AppCompatActivity() {
             AuthUI.IdpConfig.GoogleBuilder().build()
         )
 
-        val emailField =findViewById<TextInputLayout>(R.id.login_input).editText
+        val emailField = findViewById<TextInputLayout>(R.id.login_input).editText
         val passField = findViewById<TextInputLayout>(R.id.password_input).editText
 
         val singInButton = findViewById<Button>(R.id.sign_in_button)
         singInButton.setOnClickListener {
             val email = emailField?.text.toString()
             val pass = passField?.text.toString()
+
+            if (email.isEmpty() || pass.isEmpty()) {
+                return@setOnClickListener
+            }
 
             auth.signInWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(this) { task ->
@@ -73,8 +77,10 @@ class LoginActivity : AppCompatActivity() {
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w("AUTHORIZATION", "signInWithEmail:failure", task.exception)
-                        Toast.makeText(baseContext, "Authentication failed.",
-                            Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            baseContext, "Authentication failed.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         updateUI(null)
                     }
                 }
@@ -92,7 +98,8 @@ class LoginActivity : AppCompatActivity() {
                     .createSignInIntentBuilder()
                     .setAvailableProviders(providers)
                     .build(),
-                RC_SIGN_IN)
+                RC_SIGN_IN
+            )
         }
 
     }
@@ -104,9 +111,9 @@ class LoginActivity : AppCompatActivity() {
         updateUI(currentUser)
     }
 
-    private fun updateUI(user: FirebaseUser?){
+    private fun updateUI(user: FirebaseUser?) {
         Log.d("AUTHORIZATION", "current user is $user")
-        if(user != null)
+        if (user != null)
             startActivity(Intent(this, MainActivity::class.java))
     }
 

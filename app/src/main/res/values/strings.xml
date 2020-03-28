@@ -7,8 +7,8 @@
     <string name="bottom_menu_2">Карта</string>
     <string name="bottom_menu_3">Профиль</string>
 
-
-    <string name="login">Логин</string>
+    <string name="login">Вход</string>
+    <string name="email">Эл. Почта</string>
     <string name="sign_up_question">Нет аккунта?</string>
     <string name="sign_up">Зарегистрироваться</string>
     <string name="registration">Регистрация</string>
@@ -19,7 +19,6 @@
     <string name="records_table">Таблица рекордов</string>
     <string name="current_quest_title">Текущий квест</string>
     <string name="give_up_quest">Отказаться</string>
-    <!--    <string name="sure_start_quest">Вы уверены, что хотите начать квест?</string>-->
     <string name="sure_start_quest_title">Начать квест?</string>
     <string name="sure_give_up_quest_title">Отказаться от квеста?</string>
     <string name="dialog_yes">Да</string>

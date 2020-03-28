@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/default_margin"
         android:layout_marginBottom="@dimen/small_margin"
-        android:hint="@string/login"
+        android:hint="@string/email"
         app:layout_constraintBottom_toTopOf="@id/password_input">
 
         <com.google.android.material.textfield.TextInputEditText

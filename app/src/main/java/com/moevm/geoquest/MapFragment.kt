@@ -281,7 +281,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             Log.d("currentLocation", "arguments: $arguments")
             if (questId >= 0) {
                 val saintP = DEFAULT_LOCATION
-                googleMap.addMarker(MarkerOptions().position(saintP).title("Marker in SaintP"))
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(saintP, 12.0f))
             }
         } else {
