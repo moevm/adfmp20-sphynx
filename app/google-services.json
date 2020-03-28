@@ -1,34 +1,34 @@
 {
   "project_info": {
-    "project_number": "1082081057121",
-    "firebase_url": "https://sphynx-946d9.firebaseio.com",
-    "project_id": "sphynx-946d9",
-    "storage_bucket": "sphynx-946d9.appspot.com"
+    "project_number": "316804235576",
+    "firebase_url": "https://sphynx-1337.firebaseio.com",
+    "project_id": "sphynx-1337",
+    "storage_bucket": "sphynx-1337.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1082081057121:android:791130ac2405aa9a17cd20",
+        "mobilesdk_app_id": "1:316804235576:android:638fe3a3773771abaa01cd",
         "android_client_info": {
           "package_name": "com.moevm.geoquest"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1082081057121-qajpui9hd8iq9ttoq9loomp5ofk1kat5.apps.googleusercontent.com",
+          "client_id": "316804235576-2orn2fra6r7mue5q9sp5vjefk2gda6m1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBAlTuePtKwskQjwRMvLaa3dRxPjwKKiiI"
+          "current_key": "AIzaSyCUED_Z74rtWteXMbInnmj5f-OjLtfw4lc"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1082081057121-qajpui9hd8iq9ttoq9loomp5ofk1kat5.apps.googleusercontent.com",
+              "client_id": "316804235576-2orn2fra6r7mue5q9sp5vjefk2gda6m1.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
