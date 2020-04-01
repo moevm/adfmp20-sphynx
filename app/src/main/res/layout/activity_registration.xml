@@ -91,7 +91,7 @@
         android:layout_marginHorizontal="@dimen/default_margin"
         android:layout_marginBottom="@dimen/double_margin"
         android:background="@drawable/primary_color_button"
-        android:text="@string/sign_in"
+        android:text="@string/sign_up"
         android:textColor="@color/white"
         android:textSize="@dimen/button_text"
         app:layout_constraintBottom_toBottomOf="parent" />

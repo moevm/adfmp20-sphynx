@@ -8,8 +8,12 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import com.moevm.geoquest.models.LeaderModel
 
-class LeadersArrayAdapter(context: Context, resource: Int, private val leaders: Array<LeaderModel>) :
-    ArrayAdapter<LeaderModel>(context, resource, leaders){
+class LeadersArrayAdapter(
+    context: Context,
+    resource: Int,
+    private val leaders: Array<LeaderModel>
+) :
+    ArrayAdapter<LeaderModel>(context, resource, leaders) {
 
 
     override fun getView(position: Int, view: View?, parent: ViewGroup): View {
