@@ -13,7 +13,6 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
-        buildConfigField "String", "GOOGLE_MAP_KEY", GOOGLE_MAP_KEY
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
