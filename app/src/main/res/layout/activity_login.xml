@@ -21,9 +21,10 @@
 
 
     <ImageView
+        android:layout_height="@dimen/sphynx_size"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/default_margin"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
         android:src="@drawable/sphynx"
         app:layout_constraintBottom_toTopOf="@+id/login_input"
         app:layout_constraintTop_toBottomOf="@+id/title" />

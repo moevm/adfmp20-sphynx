@@ -9,7 +9,9 @@
 
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="150dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
         android:layout_margin="@dimen/default_margin"
         android:src="@drawable/sphynx"
         app:layout_constraintBottom_toTopOf="@+id/login_input"
