@@ -2,6 +2,7 @@ package com.moevm.geoquest
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,8 @@ import android.widget.ImageButton
 import android.widget.ListView
 import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.moevm.geoquest.models.QuestModel
 import com.moevm.geoquest.models.QuestStatus
 
@@ -16,6 +19,7 @@ import com.moevm.geoquest.models.QuestStatus
 class ProfileFragment : Fragment() {
 
     private lateinit var mCompletedQuests: Array<QuestModel>
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
