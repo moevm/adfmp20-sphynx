@@ -2,7 +2,6 @@ package com.moevm.geoquest
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -18,7 +17,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -28,7 +26,10 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Polygon
+import com.google.android.gms.maps.model.PolygonOptions
 
 
 class MapFragment : Fragment(), OnMapReadyCallback {
@@ -150,27 +151,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var gmap: GoogleMap
+    private var mCameraPosition: CameraPosition? = null
     private var questId: Long = -1
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        view?.findViewById<ImageButton>(R.id.area_button)
-            ?.setOnClickListener(onShowQuestAreaListener)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (activity == null) {
-            Log.d("currentLocation", "on CREATE mFusedLocationClient creation, activity is null")
-        } else {
-            Log.d(
-                "currentLocation",
-                "on CREATE mFusedLocationClient creation, activity is not null"
-            )
-            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
-        }
-
-
+        retainInstance = true
+        view?.findViewById<ImageButton>(R.id.area_button)
+            ?.setOnClickListener(onShowQuestAreaListener)
     }
 
     override fun onCreateView(
@@ -179,24 +167,21 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
-
         questId = arguments?.getLong("questId") ?: -1
 
         Log.d("currentLocation", "questId: $questId")
 
         mLocationPermissionGranted = checkLocationPermission()
         if (mLocationPermissionGranted) {
-            Log.d(
-                "currentLocation",
-                "View created, permissions granted, call draw and get location"
-            )
             getLastLocation()
-            Log.d("currentLocation", "draw called")
+            Log.d("currentLocation", "savedInst:$savedInstanceState")
+            mCameraPosition = savedInstanceState?.getParcelable(KEY_CAMERA_POSITION) ?:
+                    CameraPosition.fromLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM)
+            Log.d("currentLocation", "camera position: $mCameraPosition")
             initMapAsync()
-            Log.d("currentLocation", "get location called")
         } else {
             requestLocationPermission()
         }
@@ -233,7 +218,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         } else {
             Log.d("currentLocation", "Permissions has not exist, request")
-            requestLocationPermission()
+            permissionInfoAndRequest()
         }
     }
 
@@ -244,11 +229,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         mLocationRequest.interval = 5000
         mLocationRequest.fastestInterval = 1000
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
         mFusedLocationClient.requestLocationUpdates(
             mLocationRequest, mLocationCallback,
             Looper.myLooper()
         )
+
     }
 
     private val mLocationCallback = object : LocationCallback() {
@@ -280,11 +267,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             gmap.isMyLocationEnabled = true
             Log.d("currentLocation", "arguments: $arguments")
             if (questId >= 0) {
-                val saintP = DEFAULT_LOCATION
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(saintP, 12.0f))
+                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(mCameraPosition))
             }
-        } else {
-            permissionInfoAndRequest()
         }
     }
 
@@ -336,6 +320,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 ) {
                     Log.d("LocationPermissions", "permissions granted")
                     mLocationPermissionGranted = true
+                }
+                if (!this::gmap.isInitialized){
+                    getLastLocation()
+                    Log.d("currentLocation", "draw called")
+                    initMapAsync()
+                    Log.d("currentLocation", "get location called")
                 }
             }
         }
