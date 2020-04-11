@@ -9,16 +9,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.moevm.geoquest.models.QuestModel
 import com.moevm.geoquest.models.QuestStatus
 import com.squareup.picasso.Picasso
 
 
 class QuestsFragment : Fragment() {
+    private val db = Firebase.firestore
+    private val userId = FirebaseAuth.getInstance().currentUser?.uid
     private lateinit var callback: OnQuestActionListener
-//    private lateinit var callbackQuestGiveUp: OnQuestActionListener
     private lateinit var mListView: ListView
-    private lateinit var mQuestsArray: Array<QuestModel>
+    private var mQuestsArray: Array<QuestModel> = arrayOf()
     private var mSelectedQuestId: Int = -1
     private lateinit var mQuestsList: ArrayAdapter<QuestModel>
     private var mIsQuestSelected: Boolean = false
@@ -31,10 +35,6 @@ class QuestsFragment : Fragment() {
     fun setOnQuestActionListener(callback: OnQuestActionListener) {
         this.callback = callback
     }
-
-//    fun setOnQuestGiveUpListener(callback: OnQuestActionListener) {
-//        this.callbackQuestGiveUp = callback
-//    }
 
     private val questSelectListener = AdapterView.OnItemClickListener { parent, view_, position, item_id ->
         val dialogBuilder = AlertDialog.Builder(context)
@@ -72,33 +72,95 @@ class QuestsFragment : Fragment() {
         alert.show()
     }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_quests, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        Log.d("Sending_data" , "saved inst: $savedInstanceState")
+        if(savedInstanceState != null){
+            mIsQuestSelected = savedInstanceState.getBoolean("isQuestSelected")
+            mSelectedQuestId = savedInstanceState.getInt("currentQuestId")
+        }
+        updateCurrentQuestVisible(view)
+    }
+
+    private fun getQuestArray() {
+        if(userId == null) {
+            Log.d("questList", "user is null, fail to create quest list")
+            mQuestsArray = arrayOf()
+            return
+        }
+
+        Log.d("questList", "user id: $userId")
+        val questList = db.collection("Quests").get()
+            .addOnSuccessListener { quests_list ->
+                Log.d("questList", "quest lst: $quests_list")
+                // TODO : should be userId(variable exist)
+                db.collection("Users")
+                    .document("QM15vQJQDNQkAdhUVyn6KV1YVQp2")
+                    .collection("Quests")
+                    .whereIn("status", listOf(0,1))
+                    .get()
+                    .addOnSuccessListener { user_quests ->
+                        Log.d("questList", "success get status")
+                        val inProgressQuestId = user_quests.documents.find {
+                            it.data?.getValue("status") == 1
+                        }?.id
+
+                        val doesNotViewObjectsIds = user_quests.documents.map { it.id }
+                        val toView = quests_list.filter { it.id !in doesNotViewObjectsIds }
+
+                        mQuestsArray = Array(toView.size){
+                            val toViewObj = toView[it]
+                            val toViewObjData = toViewObj.data
+                            QuestModel(
+                                toViewObj.id.toInt(),
+                                toViewObjData.getValue("Name").toString(),
+                                "SaintP",
+                                toViewObjData.getValue("Image").toString()
+                            )
+                        }
+                        mQuestsList = QuestsArrayAdapter(
+                            context!!,
+                            R.layout.quest_list_item,
+                            mQuestsArray
+                        )
+                        mListView.adapter = mQuestsList
+                        Log.d("questList", "to ret: ${mQuestsArray.contentDeepToString()}")
+                    }
+                    .addOnFailureListener { ex ->
+                        Log.d("questList", "Fail get user quests info: $ex")
+                        // TODO: Sorry fail to load
+                        mQuestsArray = arrayOf()
+                    }
+            }
+            .addOnFailureListener{ ex ->
+                Log.d("questList", "Fail get quests list with ex: $ex")
+                // TODO: Sorry fail to load
+                mQuestsArray = arrayOf()
+            }
+
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
         if (view == null) {
             Log.d("CHECKER", "Empty view in fragment")
+            return
         }
-
         mListView = view!!.findViewById(R.id.quests_list)
-        mQuestsArray = Array(30) {
-            QuestModel(
-                it+1,
-                "СФИНКСЫ${it+1}",
-                QuestStatus.completed,
-                "Петрога",
-                "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
-            )
-        }
 
         val btnGiveUpQuest = view?.findViewById<TextView>(R.id.give_up_quest)
         btnGiveUpQuest?.setOnClickListener( giveUpQuestListener )
 
-        mQuestsList = QuestsArrayAdapter(
-            context!!,
-            R.layout.quest_list_item,
-            mQuestsArray
-        )
-        mListView.adapter = mQuestsList
+        getQuestArray()
 
         mListView.onItemClickListener = questSelectListener
 
@@ -107,14 +169,6 @@ class QuestsFragment : Fragment() {
         infoButton.setOnClickListener {
             startActivity(Intent(context, InfoActivity::class.java))
         }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_quests, container, false)
     }
 
     private fun updateCurrentQuestVisible(view: View){
@@ -134,16 +188,6 @@ class QuestsFragment : Fragment() {
         else{
             view.findViewById<LinearLayout>(R.id.current_quest_container).visibility = View.GONE
         }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        Log.d("Sending_data" , "saved inst: $savedInstanceState")
-        if(savedInstanceState != null){
-            mIsQuestSelected = savedInstanceState.getBoolean("isQuestSelected")
-            mSelectedQuestId = savedInstanceState.getInt("currentQuestId")
-        }
-        updateCurrentQuestVisible(view)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
