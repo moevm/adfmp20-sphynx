@@ -2,19 +2,27 @@ package com.moevm.geoquest
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.ListView
 import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.moevm.geoquest.models.QuestModel
+import com.moevm.geoquest.models.QuestStatus
 
 
 class ProfileFragment : Fragment() {
-
+    private val db = Firebase.firestore
+    private val userId = FirebaseAuth.getInstance().currentUser?.uid
+    private lateinit var mListView: ListView
     private lateinit var mCompletedQuests: ArrayList<QuestModel>
+    private lateinit var mQuestsArrayAdapter: ArrayAdapter<QuestModel>
 
 
     override fun onCreateView(
@@ -23,33 +31,62 @@ class ProfileFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_profile, container, false)
     }
 
+    private fun fillCompletedQuest(){
+        if(userId == null) {
+            mCompletedQuests = arrayListOf()
+            return
+        }
+        db.collection("Quests").get()
+            .addOnSuccessListener { quests_list ->
+                db.collection("Users")
+                    .document(userId)
+                    .collection("Quests")
+                    .whereEqualTo("status", QuestStatus.Completed)
+                    .get()
+                    .addOnSuccessListener { user_quests ->
+                        val toViewObjectsIds = user_quests.documents.map { it.id }
+                        val toView = quests_list.filter { it.id in toViewObjectsIds }
+                        val arr = Array(toView.size){
+                            val toViewObj = toView[it]
+                            val toViewObjData = toViewObj.data
+                            QuestModel(
+                                toViewObj.id.toInt(),
+                                toViewObjData.getValue("Name").toString(),
+                                toViewObjData.getValue("Location").toString(),
+                                toViewObjData.getValue("Image").toString()
+                            )
+                        }
+                        mCompletedQuests = ArrayList(arr.asList())
+                        mQuestsArrayAdapter = QuestsArrayAdapter(
+                            context!!,
+                            R.layout.quest_list_item,
+                            mCompletedQuests
+                        )
+                        mListView.adapter = mQuestsArrayAdapter
+                    }
+                    .addOnFailureListener { ex ->
+                        // TODO: Sorry fail to load
+                    }
+            }
+            .addOnFailureListener{ ex ->
+                // TODO: Sorry fail to load
+            }
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val exitButton = view!!.findViewById<ImageButton>(R.id.exit_button)
-
-        mCompletedQuests  = ArrayList(
-            Array(10) {
-                QuestModel(
-                    4,
-                    "СФИНКСЫ",
-                    "Петрога",
-                    "https://scontent-waw1-1.cdninstagram.com/v/t51.2885-15/sh0.08/e35/s640x640/80039569_849419158844763_2465991202160182540_n.jpg?_nc_ht=scontent-waw1-1.cdninstagram.com&_nc_cat=103&_nc_ohc=G1av5QdM8a4AX_09XR3&oh=7f40849b9575c5f4ff193659c8b02768&oe=5ED888FE"
-                )
-            }.asList()
-        )
-
-        val listView = view!!.findViewById<ListView>(R.id.quests_list)
-
-        listView.adapter = QuestsArrayAdapter(
-            context!!,
-            R.layout.quest_list_item,
-            mCompletedQuests
-        )
-
-        listView.setOnItemClickListener { parent, view, position, id ->
-            startActivity(Intent(context, RecordsActivity::class.java))
+        if(view == null){
+            Log.d("viewProblem", "view is null")
+            return
         }
 
+        mListView = view!!.findViewById(R.id.quests_list)
+        fillCompletedQuest()
+
+        mListView.setOnItemClickListener { parent, view, position, id ->
+            startActivity(Intent(context, RecordsActivity::class.java))
+        }
 
         exitButton.setOnClickListener {
             FirebaseAuth.getInstance().signOut()

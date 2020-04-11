@@ -131,7 +131,6 @@ class QuestsFragment : Fragment() {
                     .addOnSuccessListener { user_quests ->
                         val doesNotViewObjectsIds = user_quests.documents.map { it.id }
                         val toView = quests_list.filter { it.id !in doesNotViewObjectsIds }
-
                         val arr = Array(toView.size){
                             val toViewObj = toView[it]
                             val toViewObjData = toViewObj.data
@@ -160,7 +159,6 @@ class QuestsFragment : Fragment() {
                 // TODO: Sorry fail to load
                 mQuestsArray = arrayListOf()
             }
-
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
