@@ -66,12 +66,12 @@ class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
         bottomView.setOnNavigationItemSelectedListener(navigationSelectionListener)
     }
 
-    override fun onQuestSelected(position: Long) {
+    override fun onQuestSelected(position: Int) {
         Log.d("Sending_data", "Quest selected MainActivity: $position")
         var data = fragments[R.id.bottom_navigation_map]?.arguments
         if (data == null)
             data = Bundle()
-        data.putLong("questId", position)
+        data.putInt("questId", position)
 
         fragments[R.id.bottom_navigation_map]?.arguments = data
 
@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
         var data = fragments[R.id.bottom_navigation_map]?.arguments
         if (data == null)
             data = Bundle()
-        data.putLong("questId", -1)
+        data.putInt("questId", -1)
     }
 
     override fun onAttachFragment(fragment: Fragment) {

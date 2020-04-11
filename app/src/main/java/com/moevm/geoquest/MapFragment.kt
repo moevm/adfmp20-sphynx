@@ -152,7 +152,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var gmap: GoogleMap
     private var mCameraPosition: CameraPosition? = null
-    private var questId: Long = -1
+    private var questId: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -170,7 +170,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
-        questId = arguments?.getLong("questId") ?: -1
+        questId = arguments?.getInt("questId") ?: -1
 
         Log.d("currentLocation", "questId: $questId")
 
@@ -276,7 +276,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val v: Fragment = childFragmentManager.findFragmentById(R.id.mapFragment) ?: return
         mapFragment = v as SupportMapFragment
         mapFragment.getMapAsync(this)
-        questId = arguments?.getLong("questId") ?: -1
+        questId = arguments?.getInt("questId") ?: -1
         Log.d("mapAction", "questId: $questId")
     }
 

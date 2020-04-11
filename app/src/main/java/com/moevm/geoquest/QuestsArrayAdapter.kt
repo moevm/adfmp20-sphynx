@@ -12,7 +12,7 @@ import com.moevm.geoquest.models.QuestModel
 import com.squareup.picasso.Picasso
 
 
-class QuestsArrayAdapter(context: Context, resource: Int, private val quests: Array<QuestModel>) :
+class QuestsArrayAdapter(context: Context, resource: Int, private val quests: ArrayList<QuestModel>) :
     ArrayAdapter<QuestModel>(context, resource, quests) {
 
     override fun getView(position: Int, view: View?, parent: ViewGroup): View {

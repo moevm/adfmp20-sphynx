@@ -22,13 +22,14 @@ class QuestsFragment : Fragment() {
     private val userId = FirebaseAuth.getInstance().currentUser?.uid
     private lateinit var callback: OnQuestActionListener
     private lateinit var mListView: ListView
-    private var mQuestsArray: Array<QuestModel> = arrayOf()
-    private var mSelectedQuestId: Int = -1
-    private lateinit var mQuestsList: ArrayAdapter<QuestModel>
     private var mIsQuestSelected: Boolean = false
+    private var mSelectedQuestId: Int = -1
+    private var mQuestsArray: ArrayList<QuestModel> = arrayListOf()
+    private lateinit var mQuestsArrayAdapter: ArrayAdapter<QuestModel>
+
 
     interface OnQuestActionListener {
-        fun onQuestSelected(position: Long)
+        fun onQuestSelected(position: Int)
         fun onQuestGiveUp()
     }
 
@@ -36,18 +37,43 @@ class QuestsFragment : Fragment() {
         this.callback = callback
     }
 
-    private val questSelectListener = AdapterView.OnItemClickListener { parent, view_, position, item_id ->
+    private fun questApproved(position: Int){
+        val currentQuest = mQuestsArray[position]
+        Log.d("Sending_data","Quest selected questList: $position")
+        Log.d("Sending_data", "id: $position; model: $currentQuest")
+        mIsQuestSelected = true
+        mSelectedQuestId = currentQuest.id
+        if(userId != null) {
+            db.collection("Users")
+                .document(userId)
+                .collection("Quests")
+                .document(currentQuest.id.toString())
+                .set(mapOf("status" to QuestStatus.InProgress))
+                .addOnSuccessListener { Log.d("Sending_data", "success add") }
+                .addOnFailureListener { Log.d("Sending_data", "failure add") }
+        }
+        updateCurrentQuestVisible()
+        mQuestsArrayAdapter.remove(currentQuest)
+        callback.onQuestSelected(position)
+    }
+
+    private val questSelectListener = AdapterView.OnItemClickListener { _, _, position, _ ->
+        if(view?.findViewById<LinearLayout>(R.id.current_quest_container)
+                ?.visibility == View.VISIBLE)
+        {
+            Toast.makeText(
+                context, getString(R.string.current_quest_already_selected),
+                Toast.LENGTH_LONG
+            ).show()
+            return@OnItemClickListener
+        }
         val dialogBuilder = AlertDialog.Builder(context)
         dialogBuilder.setMessage("questName")
             .setCancelable(false)
-            .setPositiveButton(getString(R.string.dialog_yes)) { dialog, id ->
-                Log.d("Sending_data","Quest selected questList: $item_id, $position, $view_")
-                mIsQuestSelected = true
-                mSelectedQuestId = item_id.toInt()
-                updateCurrentQuestVisible(view!!)
-                callback.onQuestSelected(item_id)
+            .setPositiveButton(getString(R.string.dialog_yes)) { _, _ ->
+                questApproved(position)
             }
-            .setNegativeButton(getString(R.string.dialog_no)) { dialog, id ->
+            .setNegativeButton(getString(R.string.dialog_no)) { dialog, _ ->
                 dialog.cancel()
             }
         val alert = dialogBuilder.create()
@@ -61,7 +87,7 @@ class QuestsFragment : Fragment() {
             .setCancelable(false)
             .setPositiveButton(getString(R.string.dialog_yes)) { dialog, id ->
                 mIsQuestSelected = false
-                updateCurrentQuestVisible(view!!)
+                updateCurrentQuestVisible()
                 callback.onQuestGiveUp()
             }
             .setNegativeButton(getString(R.string.dialog_no)) { dialog, id ->
@@ -87,63 +113,52 @@ class QuestsFragment : Fragment() {
             mIsQuestSelected = savedInstanceState.getBoolean("isQuestSelected")
             mSelectedQuestId = savedInstanceState.getInt("currentQuestId")
         }
-        updateCurrentQuestVisible(view)
+        updateCurrentQuestVisible()
     }
 
-    private fun getQuestArray() {
+    private fun fillQuestArray() {
         if(userId == null) {
-            Log.d("questList", "user is null, fail to create quest list")
-            mQuestsArray = arrayOf()
+            mQuestsArray = arrayListOf()
             return
         }
-
-        Log.d("questList", "user id: $userId")
-        val questList = db.collection("Quests").get()
+        db.collection("Quests").get()
             .addOnSuccessListener { quests_list ->
-                Log.d("questList", "quest lst: $quests_list")
-                // TODO : should be userId(variable exist)
                 db.collection("Users")
-                    .document("QM15vQJQDNQkAdhUVyn6KV1YVQp2")
+                    .document(userId)
                     .collection("Quests")
-                    .whereIn("status", listOf(0,1))
+                    .whereIn("status", listOf(QuestStatus.Completed, QuestStatus.InProgress))
                     .get()
                     .addOnSuccessListener { user_quests ->
-                        Log.d("questList", "success get status")
-                        val inProgressQuestId = user_quests.documents.find {
-                            it.data?.getValue("status") == 1
-                        }?.id
-
                         val doesNotViewObjectsIds = user_quests.documents.map { it.id }
                         val toView = quests_list.filter { it.id !in doesNotViewObjectsIds }
 
-                        mQuestsArray = Array(toView.size){
+                        val arr = Array(toView.size){
                             val toViewObj = toView[it]
                             val toViewObjData = toViewObj.data
                             QuestModel(
                                 toViewObj.id.toInt(),
                                 toViewObjData.getValue("Name").toString(),
-                                "SaintP",
+                                toViewObjData.getValue("Location").toString(),
                                 toViewObjData.getValue("Image").toString()
                             )
                         }
-                        mQuestsList = QuestsArrayAdapter(
+
+                        mQuestsArray = ArrayList(arr.asList())
+                        mQuestsArrayAdapter = QuestsArrayAdapter(
                             context!!,
                             R.layout.quest_list_item,
                             mQuestsArray
                         )
-                        mListView.adapter = mQuestsList
-                        Log.d("questList", "to ret: ${mQuestsArray.contentDeepToString()}")
+                        mListView.adapter = mQuestsArrayAdapter
                     }
                     .addOnFailureListener { ex ->
-                        Log.d("questList", "Fail get user quests info: $ex")
                         // TODO: Sorry fail to load
-                        mQuestsArray = arrayOf()
+                        mQuestsArray = arrayListOf()
                     }
             }
             .addOnFailureListener{ ex ->
-                Log.d("questList", "Fail get quests list with ex: $ex")
                 // TODO: Sorry fail to load
-                mQuestsArray = arrayOf()
+                mQuestsArray = arrayListOf()
             }
 
     }
@@ -152,7 +167,6 @@ class QuestsFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         if (view == null) {
-            Log.d("CHECKER", "Empty view in fragment")
             return
         }
         mListView = view!!.findViewById(R.id.quests_list)
@@ -160,7 +174,7 @@ class QuestsFragment : Fragment() {
         val btnGiveUpQuest = view?.findViewById<TextView>(R.id.give_up_quest)
         btnGiveUpQuest?.setOnClickListener( giveUpQuestListener )
 
-        getQuestArray()
+        fillQuestArray()
 
         mListView.onItemClickListener = questSelectListener
 
@@ -171,23 +185,47 @@ class QuestsFragment : Fragment() {
         }
     }
 
-    private fun updateCurrentQuestVisible(view: View){
-        if(mIsQuestSelected && mSelectedQuestId >= 0) {
-            view.findViewById<LinearLayout>(R.id.current_quest_container).visibility = View.VISIBLE
-            val imageView = view.findViewById<ImageView>(R.id.image_view)
-            val selectedQuestModel = mQuestsArray[mSelectedQuestId]
-            Picasso.get()
-                .load(selectedQuestModel.imageUrl)
-                .into(imageView)
+    private fun updateCurrentQuestVisible(){
+        if (view == null || userId == null)
+            return
+        db.collection("Users")
+            .document(userId)
+            .collection("Quests")
+            .whereEqualTo("status",QuestStatus.InProgress)
+            .get()
+            .addOnSuccessListener { current_user_quest ->
+                val currentQuest = current_user_quest.documents
+                when(currentQuest.size){
+                    0 -> {
+                        view?.findViewById<LinearLayout>(R.id.current_quest_container)
+                            ?.visibility = View.GONE
+                    }
+                    1 -> {
+                        db.collection("Quests").document(currentQuest[0].id).get()
+                            .addOnSuccessListener {
+                                val questData = it.data
+                                view?.findViewById<LinearLayout>(R.id.current_quest_container)
+                                    ?.visibility = View.VISIBLE
+                                val imageView = view?.findViewById<ImageView>(R.id.image_view)
+                                val link = questData?.getValue("Image") as String
+                                Picasso.get()
+                                    .load(link)
+                                    .into(imageView)
 
-            val nameView = view.findViewById<TextView>(R.id.name)
-            nameView?.text = selectedQuestModel.name
-            val locationView = view.findViewById<TextView>(R.id.location)
-            locationView?.text = selectedQuestModel.location
-        }
-        else{
-            view.findViewById<LinearLayout>(R.id.current_quest_container).visibility = View.GONE
-        }
+                                view?.findViewById<TextView>(R.id.name)
+                                    ?.text = questData.getValue("Name") as String
+                                view?.findViewById<TextView>(R.id.location)
+                                    ?.text = questData.getValue("Location") as String
+                            }
+                            .addOnFailureListener {
+                                // TODO: Sorry fail to load
+                            }
+                    }
+                    else ->{
+                        Log.d("currentQuest", "count of currentQuest > 1")
+                    }
+                }
+            }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

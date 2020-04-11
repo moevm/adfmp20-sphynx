@@ -18,6 +18,7 @@
     <string name="confirm_password">Подтвердите пароль</string>
     <string name="records_table">Таблица рекордов</string>
     <string name="current_quest_title">Текущий квест</string>
+    <string name="current_quest_already_selected">Текущий квест уже выбран. Если хотите выбрать этот, откажитесь от текущего</string>
     <string name="give_up_quest">Отказаться</string>
     <string name="sure_start_quest_title">Начать квест?</string>
     <string name="sure_give_up_quest_title">Отказаться от квеста?</string>
