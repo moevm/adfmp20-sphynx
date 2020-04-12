@@ -1,5 +1,7 @@
 package com.moevm.geoquest.models
 
+import com.google.android.gms.maps.model.LatLng
+
 enum class QuestStatus {
     Completed,
     InProgress,
@@ -13,3 +15,7 @@ data class QuestModel(
     val imageUrl: String
 )
 
+data class AttractionModel(
+    val point: LatLng,
+    val triggerZone: Float
+)

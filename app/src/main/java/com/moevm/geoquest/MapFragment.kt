@@ -35,9 +35,8 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.ktx.Firebase
-import com.moevm.geoquest.models.QuestStatus
+import com.moevm.geoquest.models.*
 import java.lang.Exception
-
 
 class MapFragment : Fragment(), OnMapReadyCallback {
 
@@ -164,13 +163,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private var questArea : List<LatLng>? = null
     private var drawableQuestArea: Polygon? = null
+
     private var questId: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-        view?.findViewById<ImageButton>(R.id.area_button)
-            ?.setOnClickListener(onShowQuestAreaListener)
     }
 
     override fun onCreateView(
@@ -182,6 +180,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+        view?.findViewById<ImageButton>(R.id.area_button)
+            ?.setOnClickListener(onShowQuestAreaListener)
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
         questId = arguments?.getInt("questId") ?: -1
 
@@ -213,13 +215,26 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun fillQuestArea(areaReference: DocumentReference) {
         areaReference.get()
             .addOnSuccessListener { result ->
-                Log.d("quest_action", "areas: ${result.data}")
                 val points = result.data?.getValue("Points") as ArrayList<GeoPoint>
                 questArea = List(points.size){
                     LatLng(points[it].latitude, points[it].longitude)
                 }
-                Log.d("quest_action", "questArea: $questArea")
             }
+    }
+
+    private fun fillQuestAttractions(attractionList: ArrayList<DocumentReference>){
+        val questAttractions = mutableListOf<AttractionModel>()
+        attractionList.forEach { attraction ->
+            attraction.get()
+                .addOnSuccessListener { attractionInfo ->
+                    val latlng = attractionInfo.data?.getValue("Coordinates") as GeoPoint
+                    val trigger = attractionInfo.data?.getValue("Trigger-zone").toString().toFloat()
+                    questAttractions.add(AttractionModel(LatLng(latlng.latitude, latlng.longitude), trigger))
+                }
+                .addOnFailureListener{
+                    Log.d("quest_action", "Fail get info about attraction: $attraction")
+                }
+        }
     }
 
     private fun fillQuestInfo(){
@@ -243,8 +258,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 .get()
                                 .addOnSuccessListener { questInfo ->
 //                                    TODO: quest attraction
-//                                    val attractions = questInfo.data?.get("Attractions")
-//                                    Log.d("quest_action", "attraction: $attractions")
+                                    val attractions = questInfo.data?.get("Attractions")
+                                            as ArrayList<DocumentReference>
+                                    fillQuestAttractions(attractions)
                                     val areas = questInfo.data?.get("Areas")
                                             as ArrayList<DocumentReference>
                                     if(areas.size != 1){
@@ -347,8 +363,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val v: Fragment = childFragmentManager.findFragmentById(R.id.mapFragment) ?: return
         mapFragment = v as SupportMapFragment
         mapFragment.getMapAsync(this)
-        questId = arguments?.getInt("questId") ?: -1
-        Log.d("mapAction", "questId: $questId")
+//        questId = arguments?.getInt("questId") ?: -1
+//        Log.d("mapAction", "questId: $questId")
     }
 
     private fun checkLocationPermission(): Boolean {
