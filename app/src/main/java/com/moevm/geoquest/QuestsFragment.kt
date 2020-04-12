@@ -26,7 +26,7 @@ class QuestsFragment : Fragment() {
     private var mSelectedQuestId: Int = -1
     private var mQuestsArray: ArrayList<QuestModel> = arrayListOf()
     private lateinit var mQuestsArrayAdapter: ArrayAdapter<QuestModel>
-
+    private var currentQuest: QuestModel? = null
 
     interface OnQuestActionListener {
         fun onQuestSelected(position: Int)
@@ -35,26 +35,6 @@ class QuestsFragment : Fragment() {
 
     fun setOnQuestActionListener(callback: OnQuestActionListener) {
         this.callback = callback
-    }
-
-    private fun questApproved(position: Int){
-        val currentQuest = mQuestsArray[position]
-        Log.d("Sending_data","Quest selected questList: $position")
-        Log.d("Sending_data", "id: $position; model: $currentQuest")
-        mIsQuestSelected = true
-        mSelectedQuestId = currentQuest.id
-        if(userId != null) {
-            db.collection("Users")
-                .document(userId)
-                .collection("Quests")
-                .document(currentQuest.id.toString())
-                .set(mapOf("status" to QuestStatus.InProgress))
-                .addOnSuccessListener { Log.d("Sending_data", "success add") }
-                .addOnFailureListener { Log.d("Sending_data", "failure add") }
-        }
-        updateCurrentQuestVisible()
-        mQuestsArrayAdapter.remove(currentQuest)
-        callback.onQuestSelected(position)
     }
 
     private val questSelectListener = AdapterView.OnItemClickListener { _, _, position, _ ->
@@ -86,9 +66,7 @@ class QuestsFragment : Fragment() {
         dialogBuilder.setMessage(getString(R.string.sure_give_up_quest_title))
             .setCancelable(false)
             .setPositiveButton(getString(R.string.dialog_yes)) { dialog, id ->
-                mIsQuestSelected = false
-                updateCurrentQuestVisible()
-                callback.onQuestGiveUp()
+                questGiveUp()
             }
             .setNegativeButton(getString(R.string.dialog_no)) { dialog, id ->
                 dialog.cancel()
@@ -114,51 +92,6 @@ class QuestsFragment : Fragment() {
             mSelectedQuestId = savedInstanceState.getInt("currentQuestId")
         }
         updateCurrentQuestVisible()
-    }
-
-    private fun fillQuestArray() {
-        if(userId == null) {
-            mQuestsArray = arrayListOf()
-            return
-        }
-        db.collection("Quests").get()
-            .addOnSuccessListener { quests_list ->
-                db.collection("Users")
-                    .document(userId)
-                    .collection("Quests")
-                    .whereIn("status", listOf(QuestStatus.Completed, QuestStatus.InProgress))
-                    .get()
-                    .addOnSuccessListener { user_quests ->
-                        val doesNotViewObjectsIds = user_quests.documents.map { it.id }
-                        val toView = quests_list.filter { it.id !in doesNotViewObjectsIds }
-                        val arr = Array(toView.size){
-                            val toViewObj = toView[it]
-                            val toViewObjData = toViewObj.data
-                            QuestModel(
-                                toViewObj.id.toInt(),
-                                toViewObjData.getValue("Name").toString(),
-                                toViewObjData.getValue("Location").toString(),
-                                toViewObjData.getValue("Image").toString()
-                            )
-                        }
-
-                        mQuestsArray = ArrayList(arr.asList())
-                        mQuestsArrayAdapter = QuestsArrayAdapter(
-                            context!!,
-                            R.layout.quest_list_item,
-                            mQuestsArray
-                        )
-                        mListView.adapter = mQuestsArrayAdapter
-                    }
-                    .addOnFailureListener { ex ->
-                        // TODO: Sorry fail to load
-                        mQuestsArray = arrayListOf()
-                    }
-            }
-            .addOnFailureListener{ ex ->
-                // TODO: Sorry fail to load
-                mQuestsArray = arrayListOf()
-            }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -205,13 +138,15 @@ class QuestsFragment : Fragment() {
                                 view?.findViewById<LinearLayout>(R.id.current_quest_container)
                                     ?.visibility = View.VISIBLE
                                 val imageView = view?.findViewById<ImageView>(R.id.image_view)
-                                val link = questData?.getValue("Image") as String
-                                Picasso.get()
-                                    .load(link)
-                                    .into(imageView)
+                                if (imageView != null) {
+                                    val link = questData?.getValue("Image") as String
+                                    Picasso.get()
+                                        .load(link)
+                                        .into(imageView)
+                                }
 
                                 view?.findViewById<TextView>(R.id.name)
-                                    ?.text = questData.getValue("Name") as String
+                                    ?.text = questData?.getValue("Name") as String
                                 view?.findViewById<TextView>(R.id.location)
                                     ?.text = questData.getValue("Location") as String
                             }
@@ -219,12 +154,123 @@ class QuestsFragment : Fragment() {
                                 // TODO: Sorry fail to load
                             }
                     }
-                    else ->{
+                    else -> {
                         Log.d("currentQuest", "count of currentQuest > 1")
                     }
                 }
             }
     }
+
+    private fun fillQuestArray() {
+        if(userId == null) {
+            mQuestsArray = arrayListOf()
+            return
+        }
+        Log.d("currentQuest", "user id: $userId")
+        db.collection("Quests").get()
+            .addOnSuccessListener { quests_list ->
+                db.collection("Users")
+                    .document(userId)
+                    .collection("Quests")
+                    .whereIn("status", listOf(QuestStatus.Completed, QuestStatus.InProgress))
+                    .get()
+                    .addOnSuccessListener { user_quests ->
+                        val doesNotViewObjectsIds = user_quests.documents.map { it.id }
+                        val toView = quests_list.filter { it.id !in doesNotViewObjectsIds }
+                        val currentId = user_quests.documents.find{
+                            it.data?.getValue("status") == QuestStatus.InProgress.toString()
+                        }
+                        if(currentId != null){
+                            val currentQuestObj= quests_list.documents[currentId.id.toInt()]
+                            currentQuest = QuestModel(
+                                currentQuestObj.id.toInt(),
+                                currentQuestObj.data?.getValue("Name").toString(),
+                                currentQuestObj.data?.getValue("Location").toString(),
+                                currentQuestObj.data?.getValue("Image").toString()
+                            )
+                            Log.d("currentQuest", "$currentQuest")
+                        }
+                        val arr = Array(toView.size){
+                            val toViewObj = toView[it]
+                            val toViewObjData = toViewObj.data
+                            QuestModel(
+                                toViewObj.id.toInt(),
+                                toViewObjData.getValue("Name").toString(),
+                                toViewObjData.getValue("Location").toString(),
+                                toViewObjData.getValue("Image").toString()
+                            )
+                        }
+
+                        mQuestsArray = ArrayList(arr.asList())
+                        if (context == null)
+                            return@addOnSuccessListener
+                        mQuestsArrayAdapter = QuestsArrayAdapter(
+                            context!!,
+                            R.layout.quest_list_item,
+                            mQuestsArray
+                        )
+                        mListView.adapter = mQuestsArrayAdapter
+                    }
+                    .addOnFailureListener { ex ->
+                        // TODO: Sorry fail to load
+                        mQuestsArray = arrayListOf()
+                    }
+            }
+            .addOnFailureListener{ ex ->
+                // TODO: Sorry fail to load
+                mQuestsArray = arrayListOf()
+            }
+    }
+
+    private fun questApproved(position: Int){
+        currentQuest = mQuestsArray[position]
+        if(currentQuest == null)
+            return
+        Log.d("Sending_data","Quest selected questList: $position")
+        Log.d("Sending_data", "id: $position; model: $currentQuest")
+        mIsQuestSelected = true
+        mSelectedQuestId = currentQuest!!.id
+        if(userId != null) {
+            db.collection("Users")
+                .document(userId)
+                .collection("Quests")
+                .document(currentQuest!!.id.toString())
+                .set(mapOf("status" to QuestStatus.InProgress))
+                .addOnSuccessListener {
+                    Log.d("Sending_data", "success add")
+                    updateCurrentQuestVisible()
+                    mQuestsArrayAdapter.remove(currentQuest)
+                    callback.onQuestSelected(position)
+                }
+                .addOnFailureListener {
+                    currentQuest = null
+                    Log.d("Sending_data", "failure add")
+                    //TODO: No internet connection
+                }
+        }
+
+    }
+
+    private fun questGiveUp(){
+        if(userId != null && currentQuest != null) {
+            db.collection("Users")
+                .document(userId)
+                .collection("Quests")
+                .document(currentQuest?.id.toString())
+                .set(mapOf("status" to QuestStatus.Nothing))
+                .addOnSuccessListener {
+                    mIsQuestSelected = false
+                    Log.d("Sending_data", "success remove current")
+                    updateCurrentQuestVisible()
+                    mQuestsArrayAdapter.add(currentQuest)
+                    currentQuest = null
+                    callback.onQuestGiveUp()
+
+                }
+                .addOnFailureListener { Log.d("Sending_data", "failure remove current") }
+        }
+    }
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

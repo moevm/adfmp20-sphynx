@@ -57,6 +57,8 @@ class ProfileFragment : Fragment() {
                             )
                         }
                         mCompletedQuests = ArrayList(arr.asList())
+                        if (context == null)
+                            return@addOnSuccessListener
                         mQuestsArrayAdapter = QuestsArrayAdapter(
                             context!!,
                             R.layout.quest_list_item,
