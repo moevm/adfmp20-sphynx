@@ -37,6 +37,8 @@ import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.ktx.Firebase
 import com.moevm.geoquest.models.*
 import java.lang.Exception
+import java.lang.Thread.sleep
+
 
 class MapFragment : Fragment(), OnMapReadyCallback {
 
@@ -163,7 +165,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private var questArea : List<LatLng>? = null
     private var drawableQuestArea: Polygon? = null
-
+    private var questAttractions : MutableList<AttractionModel>? = null
     private var questId: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -223,18 +225,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun fillQuestAttractions(attractionList: ArrayList<DocumentReference>){
-        val questAttractions = mutableListOf<AttractionModel>()
+        questAttractions = mutableListOf()
         attractionList.forEach { attraction ->
             attraction.get()
                 .addOnSuccessListener { attractionInfo ->
                     val latlng = attractionInfo.data?.getValue("Coordinates") as GeoPoint
                     val trigger = attractionInfo.data?.getValue("Trigger-zone").toString().toFloat()
-                    questAttractions.add(AttractionModel(LatLng(latlng.latitude, latlng.longitude), trigger))
+                    questAttractions?.add(AttractionModel(LatLng(latlng.latitude, latlng.longitude), trigger))
                 }
                 .addOnFailureListener{
                     Log.d("quest_action", "Fail get info about attraction: $attraction")
                 }
         }
+
     }
 
     private fun fillQuestInfo(){
