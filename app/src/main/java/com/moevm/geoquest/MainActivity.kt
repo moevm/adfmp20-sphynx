@@ -10,9 +10,6 @@ import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
 
-//    lateinit var questFragement: QuestsFragment
-//    lateinit var mapFragement: MapFragment
-//    lateinit var profileFragement: ProfileFragment
     lateinit var auth: FirebaseAuth
     lateinit var bottomView: BottomNavigationView
 
@@ -72,7 +69,7 @@ class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
         if (data == null)
             data = Bundle()
         data.putInt("questId", position)
-
+        data.putBoolean("needCameraChange", true)
         fragments[R.id.bottom_navigation_map]?.arguments = data
 
         bottomView.selectedItemId = R.id.bottom_navigation_map
@@ -89,7 +86,6 @@ class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
         Log.d("Sending_data", "Quest Fragment attached")
         if (fragment is QuestsFragment) {
             fragment.setOnQuestActionListener(this)
-//            fragment.setOnQuestGiveUpListener(this)
         }
     }
 

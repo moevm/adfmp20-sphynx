@@ -30,6 +30,13 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.PolygonOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.ktx.Firebase
+import com.moevm.geoquest.models.QuestStatus
+import java.lang.Exception
 
 
 class MapFragment : Fragment(), OnMapReadyCallback {
@@ -145,13 +152,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         private const val REQUEST_PERMISSION_COARSE = 1
     }
 
-    private var mLocationPermissionGranted = false
-    private lateinit var mFusedLocationClient: FusedLocationProviderClient
-    private var questArea: Polygon? = null
+    private val db = Firebase.firestore
+    private val userId = FirebaseAuth.getInstance().currentUser?.uid
 
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var gmap: GoogleMap
     private var mCameraPosition: CameraPosition? = null
+
+    private var mLocationPermissionGranted = false
+    private lateinit var mFusedLocationClient: FusedLocationProviderClient
+
+    private var questArea : List<LatLng>? = null
+    private var drawableQuestArea: Polygon? = null
     private var questId: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -164,6 +176,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
+        fillQuestInfo()
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
@@ -179,7 +192,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             getLastLocation()
             Log.d("currentLocation", "savedInst:$savedInstanceState")
             mCameraPosition = savedInstanceState?.getParcelable(KEY_CAMERA_POSITION) ?:
-                    CameraPosition.fromLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM)
+                CameraPosition.fromLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM)
             Log.d("currentLocation", "camera position: $mCameraPosition")
             initMapAsync()
         } else {
@@ -188,11 +201,69 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private val onShowQuestAreaListener = View.OnClickListener {
-        questArea = if (questArea == null && questId >= 0) {
+        Log.d("quest_action", "Quest area: $drawableQuestArea, $questId")
+        drawableQuestArea = if (drawableQuestArea == null && questId >= 0) {
             gmap.addPolygon(getQuestArea())
         } else {
-            questArea?.remove()
+            drawableQuestArea?.remove()
             null
+        }
+    }
+
+    private fun fillQuestArea(areaReference: DocumentReference) {
+        areaReference.get()
+            .addOnSuccessListener { result ->
+                Log.d("quest_action", "areas: ${result.data}")
+                val points = result.data?.getValue("Points") as ArrayList<GeoPoint>
+                questArea = List(points.size){
+                    LatLng(points[it].latitude, points[it].longitude)
+                }
+                Log.d("quest_action", "questArea: $questArea")
+            }
+    }
+
+    private fun fillQuestInfo(){
+        if(userId != null){
+            db.collection("Users")
+                .document(userId)
+                .collection("Quests")
+                .whereEqualTo("status", QuestStatus.InProgress)
+                .get()
+                .addOnSuccessListener { current_quest ->
+                    when(current_quest.size()){
+                        0 -> {
+                            questId = -1
+                            drawableQuestArea?.remove()
+                            drawableQuestArea = null
+                        }
+                        1 -> {
+                            questId = current_quest.documents[0]!!.id.toInt()
+                            db.collection("Quests")
+                                .document(questId.toString())
+                                .get()
+                                .addOnSuccessListener { questInfo ->
+//                                    TODO: quest attraction
+//                                    val attractions = questInfo.data?.get("Attractions")
+//                                    Log.d("quest_action", "attraction: $attractions")
+                                    val areas = questInfo.data?.get("Areas")
+                                            as ArrayList<DocumentReference>
+                                    if(areas.size != 1){
+                                        Log.d("quest_action", "more than 1 quest area reference")
+                                    }
+                                    fillQuestArea(areas[0])
+                                }
+                                .addOnFailureListener{
+                                    // TODO sorry fail to load
+                                    Log.d("quest_action", "fail to load quest info")
+                                }
+
+                        }
+                        2 -> {
+                            throw Exception("more then 1 quest: $current_quest")
+                        }
+
+                    }
+                }
         }
     }
 
@@ -244,16 +315,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             if (locationResult == null)
                 return
             val mLastLocation: Location = locationResult.lastLocation
-//            Log.d("currentLocation", "last location: $mLastLocation")
         }
     }
 
     private fun getQuestArea(): PolygonOptions {
         //TODO get quest area from db
+        Log.d("quest_action", "questArea(onClick): $questArea")
         return PolygonOptions()
             .strokeColor(Color.RED)
             .fillColor(ContextCompat.getColor(context!!, R.color.questArea))
-            .addAll(petrog)
+            .addAll(questArea)
             .strokeWidth(4.0f)
     }
 
@@ -357,4 +428,5 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 private operator fun LatLng.plus(latLng: LatLng): LatLng? {
     return LatLng(this.latitude + latLng.latitude, this.longitude + latLng.longitude)
 }
+
 
