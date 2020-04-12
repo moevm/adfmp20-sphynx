@@ -17,9 +17,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
+import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -165,7 +168,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private var questArea : List<LatLng>? = null
     private var drawableQuestArea: Polygon? = null
-    private var questAttractions : MutableList<AttractionModel>? = null
+    private var questProgress = QuestProgress()
     private var questId: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -225,13 +228,17 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun fillQuestAttractions(attractionList: ArrayList<DocumentReference>){
-        questAttractions = mutableListOf()
+        val questAttractions = mutableListOf<AttractionModel>()
         attractionList.forEach { attraction ->
             attraction.get()
                 .addOnSuccessListener { attractionInfo ->
                     val latlng = attractionInfo.data?.getValue("Coordinates") as GeoPoint
                     val trigger = attractionInfo.data?.getValue("Trigger-zone").toString().toFloat()
-                    questAttractions?.add(AttractionModel(LatLng(latlng.latitude, latlng.longitude), trigger))
+                    questAttractions.add(AttractionModel(LatLng(latlng.latitude, latlng.longitude), trigger))
+                    if(questAttractions.size == attractionList.size){
+                        questProgress.setQuestAttractions(questAttractions)
+                        questProgress
+                    }
                 }
                 .addOnFailureListener{
                     Log.d("quest_action", "Fail get info about attraction: $attraction")
@@ -328,12 +335,44 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     }
 
+    private fun updateCardInfo(result: AttractionStatus){
+        if(result == AttractionStatus.Nothing){
+            view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.GONE
+        }
+        else {
+            view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.VISIBLE
+            when(result){
+                AttractionStatus.Success -> {
+                    view?.findViewById<CardView>(R.id.distance_card_view)
+                        ?.setCardBackgroundColor(Color.parseColor("#E100FF19"))
+                    view?.findViewById<TextView>(R.id.status)
+                        ?.text = "Точка найдена"
+                }
+                AttractionStatus.Colder -> {
+                    view?.findViewById<CardView>(R.id.distance_card_view)
+                        ?.setCardBackgroundColor(Color.parseColor("#D457E1FF"))
+                    view?.findViewById<TextView>(R.id.status)
+                        ?.text = "Холоднее"
+                }
+                AttractionStatus.Warmer -> {
+                    view?.findViewById<CardView>(R.id.distance_card_view)
+                        ?.setCardBackgroundColor(Color.parseColor("#E1FFA800"))
+                    view?.findViewById<TextView>(R.id.status)
+                        ?.text = "Теплее"
+                }
+                else -> {Log.d("location", "WTF? must be one of Attractions status")}
+            }
+        }
+    }
+
     private val mLocationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult?) {
             super.onLocationResult(locationResult)
             if (locationResult == null)
                 return
             val mLastLocation: Location = locationResult.lastLocation
+            val result = questProgress.checkDistanceToObject(mLastLocation)
+            updateCardInfo(result)
         }
     }
 
@@ -366,8 +405,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val v: Fragment = childFragmentManager.findFragmentById(R.id.mapFragment) ?: return
         mapFragment = v as SupportMapFragment
         mapFragment.getMapAsync(this)
-//        questId = arguments?.getInt("questId") ?: -1
-//        Log.d("mapAction", "questId: $questId")
     }
 
     private fun checkLocationPermission(): Boolean {
@@ -444,7 +481,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
 }
 
-private operator fun LatLng.plus(latLng: LatLng): LatLng? {
+operator fun LatLng.plus(latLng: LatLng): LatLng? {
     return LatLng(this.latitude + latLng.latitude, this.longitude + latLng.longitude)
 }
 
