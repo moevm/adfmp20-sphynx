@@ -6,11 +6,13 @@ enum class AttractionStatus {
     Warmer,
     Colder,
     Success,
-    Nothing
+    Nothing,
+    QuestCompleted
 }
 
 data class AttractionModel(
+    val name: String,
     val coordinates: LatLng,
     val triggerZone: Float,
-    val completed: Boolean = false
+    var completed: Boolean = false
 )
