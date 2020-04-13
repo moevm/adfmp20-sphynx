@@ -38,9 +38,9 @@ class QuestsFragment : Fragment() {
     }
 
     private val questSelectListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-        if(view?.findViewById<LinearLayout>(R.id.current_quest_container)
-                ?.visibility == View.VISIBLE)
-        {
+        if (view?.findViewById<LinearLayout>(R.id.current_quest_container)
+                ?.visibility == View.VISIBLE
+        ) {
             Toast.makeText(
                 context, getString(R.string.current_quest_already_selected),
                 Toast.LENGTH_LONG
@@ -86,8 +86,8 @@ class QuestsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d("Sending_data" , "saved inst: $savedInstanceState")
-        if(savedInstanceState != null){
+        Log.d("Sending_data", "saved inst: $savedInstanceState")
+        if (savedInstanceState != null) {
             mIsQuestSelected = savedInstanceState.getBoolean("isQuestSelected")
             mSelectedQuestId = savedInstanceState.getInt("currentQuestId")
         }
@@ -103,7 +103,7 @@ class QuestsFragment : Fragment() {
         mListView = view!!.findViewById(R.id.quests_list)
 
         val btnGiveUpQuest = view?.findViewById<TextView>(R.id.give_up_quest)
-        btnGiveUpQuest?.setOnClickListener( giveUpQuestListener )
+        btnGiveUpQuest?.setOnClickListener(giveUpQuestListener)
 
         fillQuestArray()
 
@@ -116,17 +116,17 @@ class QuestsFragment : Fragment() {
         }
     }
 
-    private fun updateCurrentQuestVisible(){
+    private fun updateCurrentQuestVisible() {
         if (view == null || userId == null)
             return
         db.collection("Users")
             .document(userId)
             .collection("Quests")
-            .whereEqualTo("status",QuestStatus.InProgress)
+            .whereEqualTo("status", QuestStatus.InProgress)
             .get()
             .addOnSuccessListener { current_user_quest ->
                 val currentQuest = current_user_quest.documents
-                when(currentQuest.size){
+                when (currentQuest.size) {
                     0 -> {
                         view?.findViewById<LinearLayout>(R.id.current_quest_container)
                             ?.visibility = View.GONE
@@ -162,7 +162,7 @@ class QuestsFragment : Fragment() {
     }
 
     private fun fillQuestArray() {
-        if(userId == null) {
+        if (userId == null) {
             mQuestsArray = arrayListOf()
             return
         }
@@ -177,12 +177,14 @@ class QuestsFragment : Fragment() {
                     .addOnSuccessListener { user_quests ->
                         val doesNotViewObjectsIds = user_quests.documents.map { it.id }
                         val toView = quests_list.filter { it.id !in doesNotViewObjectsIds }
-                        view?.findViewById<TextView>(R.id.available_quests_count)?.text = toView.size.toString()
-                        val currentId = user_quests.documents.find{
+                        view?.findViewById<TextView>(R.id.available_quests_count)?.text =
+                            toView.size.toString()
+                        val currentId = user_quests.documents.find {
                             it.data?.getValue("status") == QuestStatus.InProgress.toString()
                         }
-                        if(currentId != null){
-                            val currentQuestObj= quests_list.documents.find { it.id.toInt() == currentId.id.toInt() }!!
+                        if (currentId != null) {
+                            val currentQuestObj =
+                                quests_list.documents.find { it.id.toInt() == currentId.id.toInt() }!!
                             currentQuest = QuestModel(
                                 currentQuestObj.id.toInt(),
                                 currentQuestObj.data?.getValue("Name").toString(),
@@ -191,7 +193,7 @@ class QuestsFragment : Fragment() {
                             )
                             Log.d("currentQuest", "$currentQuest")
                         }
-                        val arr = Array(toView.size){
+                        val arr = Array(toView.size) {
                             val toViewObj = toView[it]
                             val toViewObjData = toViewObj.data
                             QuestModel(
@@ -219,21 +221,21 @@ class QuestsFragment : Fragment() {
                         mQuestsArray = arrayListOf()
                     }
             }
-            .addOnFailureListener{ ex ->
+            .addOnFailureListener { ex ->
                 // TODO: Sorry fail to load
                 mQuestsArray = arrayListOf()
             }
     }
 
-    private fun questApproved(position: Int){
+    private fun questApproved(position: Int) {
         currentQuest = mQuestsArray[position]
-        if(currentQuest == null)
+        if (currentQuest == null)
             return
-        Log.d("Sending_data","Quest selected questList: $position")
+        Log.d("Sending_data", "Quest selected questList: $position")
         Log.d("Sending_data", "id: $position; model: $currentQuest")
         mIsQuestSelected = true
         mSelectedQuestId = currentQuest!!.id
-        if(userId != null) {
+        if (userId != null) {
             db.collection("Users")
                 .document(userId)
                 .collection("Quests")
@@ -254,8 +256,8 @@ class QuestsFragment : Fragment() {
 
     }
 
-    private fun questGiveUp(){
-        if(userId != null && currentQuest != null) {
+    private fun questGiveUp() {
+        if (userId != null && currentQuest != null) {
             db.collection("Users")
                 .document(userId)
                 .collection("Quests")

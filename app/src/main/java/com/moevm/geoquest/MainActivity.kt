@@ -12,39 +12,28 @@ class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
 
     lateinit var auth: FirebaseAuth
     lateinit var bottomView: BottomNavigationView
-
     private lateinit var stateHelper: FragmentStateHelper
-
     private val fragments = mutableMapOf<Int, Fragment>()
 
-    private fun saveCurrentFragmentState() {
-        fragments[bottomView.selectedItemId]?.let { oldFragment->
-            stateHelper.saveState(oldFragment, bottomView.selectedItemId)
+    private val navigationSelectionListener =
+        BottomNavigationView.OnNavigationItemSelectedListener {
+            val newFragment = fragments[it.itemId]!!
+            stateHelper.restoreState(newFragment, it.itemId)
+
+            supportFragmentManager.beginTransaction().apply {
+                show(newFragment)
+                hide(fragments[bottomView.selectedItemId]!!)
+                commit()
+            }
+
+            true
         }
-    }
-
-    private val navigationSelectionListener = BottomNavigationView.OnNavigationItemSelectedListener {
-        val newFragment = fragments[it.itemId] ?: QuestsFragment()
-        Log.d("bottomNavView", "fragment: $newFragment")
-        fragments[it.itemId] = newFragment
-
-        saveCurrentFragmentState()
-        stateHelper.restoreState(newFragment, it.itemId)
-
-
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, newFragment)
-            .commitNowAllowingStateLoss()
-
-
-        true
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         auth = FirebaseAuth.getInstance()
-        if(auth.currentUser == null)
+        if (auth.currentUser == null)
             startActivity(Intent(this, LoginActivity::class.java))
         bottomView = findViewById(R.id.bottom_navigation)
         stateHelper = FragmentStateHelper(supportFragmentManager)
@@ -53,10 +42,13 @@ class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
         fragments[R.id.bottom_navigation_map] = MapFragment()
         fragments[R.id.bottom_navigation_profile] = ProfileFragment()
 
-        if (fragments[R.id.bottom_navigation_quests] != null)
+        fragments.forEach {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragments[R.id.bottom_navigation_quests] as Fragment).commit()
+                .add(R.id.fragment_container, it.value).hide(it.value).commit()
+        }
 
+        supportFragmentManager.beginTransaction().show(fragments[R.id.bottom_navigation_quests]!!)
+            .commit()
 
         Log.d("Sending_data", "fragments: ${supportFragmentManager.fragments}")
 
