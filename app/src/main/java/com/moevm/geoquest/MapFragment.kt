@@ -37,6 +37,7 @@ import com.google.firebase.ktx.Firebase
 import com.moevm.geoquest.models.AttractionModel
 import com.moevm.geoquest.models.AttractionStatus
 import com.moevm.geoquest.models.QuestStatus
+import java.util.*
 
 
 class MapFragment : Fragment(), OnMapReadyCallback {
@@ -148,6 +149,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             LatLng(59.95653126368728, 30.27915929710315),
             LatLng(59.95981243283747, 30.27580690776725)
         )
+        private var timer: Timer = Timer()
+        private var timerValue: Int = 1
         private const val DEFAULT_ZOOM = 12.0f
         private val DEFAULT_LOCATION = LatLng(59.93861111111111, 30.31388888888889)
         private const val REQUEST_PERMISSION_COARSE = 1
@@ -263,6 +266,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     }
 
+    private fun updateTimeQuestProgress(){
+        Log.d("TimerTag", "update time: $timerValue")
+        timerValue++
+        view?.findViewById<TextView>(R.id.time_statistics)
+            ?.text = getString(R.string.quest_progress_time, timerValue)
+    }
+
     private fun fillQuestInfo() {
         db.collection("Users")
             .document(userId)
@@ -278,6 +288,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     }
                     1 -> {
                         questId = current_quest.documents[0]!!.id.toInt()
+                        Log.d("TimerTag", "start timer task")
+//                        timer.schedule(object : TimerTask() {
+//                            override fun run() {
+//                                updateTimeQuestProgress()
+//                            }
+//                        }, 0, 1000)
                         db.collection("Quests")
                             .document(questId.toString())
                             .get()
@@ -297,7 +313,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 // TODO sorry fail to load
                                 Log.d("quest_action", "fail to load quest info")
                             }
-
                     }
                     2 -> {
                         throw Exception("more then 1 quest: $current_quest")
@@ -370,9 +385,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 .addOnSuccessListener {
                     val keys = it.data?.keys
                     if (keys != null && "Statistic" in keys) {
-                        val user_stat = it.data?.getValue("Statistic") as Map<String, Any?>
-                        val pointsFounded = user_stat.getValue("Points").toString().toInt()
-                        val questCompleted = user_stat.getValue("Quests").toString().toInt()
+                        val userStat = it.data?.getValue("Statistic") as Map<String, Any?>
+                        val pointsFounded = userStat.getValue("Points").toString().toInt()
+                        val questCompleted = userStat.getValue("Quests").toString().toInt()
                         db.collection("Users")
                             .document(userId)
                             .set(
@@ -414,6 +429,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
             questId = -1
         }
+//        Log.d("TimerTag", "timer cancel")
+//        timer.cancel()
         view?.findViewById<TextView>(R.id.points_statistics)
             ?.text = getString(R.string.quest_progress_points, questAttractionsCount, questAttractionsCount)
     }
