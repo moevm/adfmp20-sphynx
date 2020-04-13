@@ -414,6 +414,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
             questId = -1
         }
+        view?.findViewById<TextView>(R.id.points_statistics)
+            ?.text = getString(R.string.quest_progress_points, questAttractionsCount, questAttractionsCount)
     }
 
     private fun updateCardsInfoProgress(distanceCardText:String,
@@ -426,25 +428,29 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         if(needFoundedCountUpdate)
         {
             questFoundedAttractionsCount++
-            questAttractionsCount
-            view?.findViewById<TextView>(R.id.points_statistics)
-                ?.text = "$questFoundedAttractionsCount/$questAttractionsCount"
-        }
 
+            view?.findViewById<TextView>(R.id.points_statistics)
+                ?.text = getString(R.string.quest_progress_points,
+            questFoundedAttractionsCount/4, questAttractionsCount)
+        }
+    }
+
+    private fun addLastFoundedQuestPoint(){
+        val lastFounded = questProgress.getLastFounded()
+        if (lastFounded != null) {
+            gmap.addMarker(
+                MarkerOptions()
+                    .position(lastFounded.coordinates)
+                    .title(lastFounded.name)
+            )
+        }
     }
 
     private fun updateCardInfo(result: AttractionStatus) {
         //TODO quest completed: congratulation, prob. statistic
         when (result) {
             AttractionStatus.Success -> {
-                val lastFounded = questProgress.getLastFounded()
-                if (lastFounded != null) {
-                    gmap.addMarker(
-                        MarkerOptions()
-                            .position(lastFounded.coordinates)
-                            .title(lastFounded.name)
-                    )
-                }
+                addLastFoundedQuestPoint()
                 updateCardsInfoProgress("Точка найдена", "#E100FF19", true)
             }
             AttractionStatus.Colder -> {
@@ -455,6 +461,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
             AttractionStatus.QuestCompleted -> {
                 view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.GONE
+                Toast.makeText(context, "Поздравляем! Вы прошли квест", Toast.LENGTH_LONG).show()
+                addLastFoundedQuestPoint()
                 questCompleted()
             }
             AttractionStatus.Nothing -> {
