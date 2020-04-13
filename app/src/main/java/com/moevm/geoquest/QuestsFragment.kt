@@ -182,7 +182,7 @@ class QuestsFragment : Fragment() {
                             it.data?.getValue("status") == QuestStatus.InProgress.toString()
                         }
                         if(currentId != null){
-                            val currentQuestObj= quests_list.documents[currentId.id.toInt()]
+                            val currentQuestObj= quests_list.documents.find { it.id.toInt() == currentId.id.toInt() }!!
                             currentQuest = QuestModel(
                                 currentQuestObj.id.toInt(),
                                 currentQuestObj.data?.getValue("Name").toString(),
@@ -205,6 +205,8 @@ class QuestsFragment : Fragment() {
                         mQuestsArray = ArrayList(arr.asList())
                         if (context == null)
                             return@addOnSuccessListener
+
+                        view?.findViewById<ProgressBar>(R.id.progress_bar)?.visibility = View.GONE
                         mQuestsArrayAdapter = QuestsArrayAdapter(
                             context!!,
                             R.layout.quest_list_item,
