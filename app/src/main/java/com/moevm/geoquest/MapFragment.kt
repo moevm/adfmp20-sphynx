@@ -186,6 +186,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
+//        retainInstance = true
         fillQuestInfo()
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
@@ -525,6 +526,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         Log.d("currentLocation", "onMapReady")
         gmap = googleMap.apply {
             uiSettings.isMyLocationButtonEnabled = false
+            uiSettings.isCompassEnabled = false
         }
 
         if (mLocationPermissionGranted) {
@@ -615,7 +617,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         outState.putParcelable(KEY_CAMERA_POSITION, gmap.cameraPosition)
         outState.putParcelable(KEY_QUEST_PROGRESS, questProgress)
     }
-
 }
 
 operator fun LatLng.plus(latLng: LatLng): LatLng? {
