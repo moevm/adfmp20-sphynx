@@ -245,7 +245,7 @@ class QuestsFragment : Fragment() {
                     Log.d("Sending_data", "success add")
                     updateCurrentQuestVisible()
                     mQuestsArrayAdapter.remove(currentQuest)
-                    callback.onQuestSelected(position)
+                    callback.onQuestSelected(mSelectedQuestId)
                 }
                 .addOnFailureListener {
                     currentQuest = null
