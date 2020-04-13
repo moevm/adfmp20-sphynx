@@ -10,7 +10,9 @@ import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
+import android.os.Message
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
@@ -150,7 +152,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             LatLng(59.95981243283747, 30.27580690776725)
         )
         private var timer: Timer = Timer()
-        private var timerValue: Int = 1
+        private var timerValue: Int = -1
         private const val DEFAULT_ZOOM = 12.0f
         private val DEFAULT_LOCATION = LatLng(59.93861111111111, 30.31388888888889)
         private const val REQUEST_PERMISSION_COARSE = 1
@@ -266,13 +268,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     }
 
-    private fun updateTimeQuestProgress(){
-        Log.d("TimerTag", "update time: $timerValue")
-        timerValue++
-        view?.findViewById<TextView>(R.id.time_statistics)
-            ?.text = getString(R.string.quest_progress_time, timerValue)
-    }
-
     private fun fillQuestInfo() {
         db.collection("Users")
             .document(userId)
@@ -289,11 +284,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     1 -> {
                         questId = current_quest.documents[0]!!.id.toInt()
                         Log.d("TimerTag", "start timer task")
-//                        timer.schedule(object : TimerTask() {
-//                            override fun run() {
-//                                updateTimeQuestProgress()
-//                            }
-//                        }, 0, 1000)
+                        startTimer()
                         db.collection("Quests")
                             .document(questId.toString())
                             .get()
@@ -364,6 +355,24 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     }
 
+    private fun startTimer() {
+        Log.d("TimerTag", "Start timer")
+        timer.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                timerValue += 1
+                mHandler.obtainMessage(1).sendToTarget()
+            }
+        }, 0, 60_000)
+    }
+
+    var mHandler: Handler = object : Handler() {
+        override fun handleMessage(msg: Message?) {
+            Log.d("TimerTag", "timer: $timerValue")
+            view?.findViewById<TextView>(R.id.time_statistics)?.text = getString(R.string.quest_progress_time, timerValue)
+        }
+    }
+
+
     private fun questCompleted() {
         Log.d("quest_action", "Quest Completed!!, questId: $questId")
         if (questId >= 0) {
@@ -429,8 +438,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
             questId = -1
         }
-//        Log.d("TimerTag", "timer cancel")
-//        timer.cancel()
+        Log.d("TimerTag", "timer cancel")
+        timer.cancel()
+        timerValue = -1
         view?.findViewById<TextView>(R.id.points_statistics)
             ?.text = getString(R.string.quest_progress_points, questAttractionsCount, questAttractionsCount)
     }
