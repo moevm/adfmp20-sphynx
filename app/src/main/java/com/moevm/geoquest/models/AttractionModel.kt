@@ -40,12 +40,12 @@ data class AttractionModel(val nm: String = "", val coord: LatLng = LatLng(0.0, 
 
     companion object CREATOR : Parcelable.Creator<AttractionModel> {
         override fun createFromParcel(parcel: Parcel): AttractionModel {
-            Log.d("parcelable", "AttractionModel: call createFromParcel")
+            Log.d("parcelable", "AttractionModel call createFromParcel")
             return AttractionModel(parcel)
         }
 
         override fun newArray(size: Int): Array<AttractionModel?> {
-            Log.d("parcelable", "AttractionModel: call newArray")
+            Log.d("parcelable", "call newArray")
             return arrayOfNulls(size)
         }
     }

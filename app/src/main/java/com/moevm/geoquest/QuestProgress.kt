@@ -15,6 +15,7 @@ import kotlin.math.abs
 class QuestProgress() : Parcelable {
     private var questSelected: Boolean = false
     private var previousDistance: Float? = Float.POSITIVE_INFINITY
+    private var questAttractionStartCount: Int = 0
     private lateinit var questAttractions : MutableList<AttractionModel>
     private var completedTimer: Int = 0
 
@@ -27,8 +28,8 @@ class QuestProgress() : Parcelable {
         parcel.readTypedList(questAttractions, AttractionModel.CREATOR)
     }
 
-    fun getQuestAttractions() : MutableList<AttractionModel> {
-        return this.questAttractions
+    fun getQuestAttractionStartCount() : Int {
+        return this.questAttractionStartCount
     }
 
     fun getLastFounded(): AttractionModel? {
@@ -39,11 +40,13 @@ class QuestProgress() : Parcelable {
         questSelected = false
         previousDistance = null
         completedTimer = 0
+        questAttractionStartCount = 0
     }
 
     fun setupQuest(qa: MutableList<AttractionModel>, qi:Int, uId: String) {
         this.questSelected = true
         this.questAttractions = qa
+        this.questAttractionStartCount = qa.size
         Log.d("location", "attractions object: ${this.questAttractions}")
     }
 
@@ -60,16 +63,17 @@ class QuestProgress() : Parcelable {
                 attractionLocation.latitude = min.coordinates.latitude
                 attractionLocation.longitude = min.coordinates.longitude
                 val distance = location.distanceTo(attractionLocation)
-                Log.d("location", "{${questAttractions.size}}: (${min.triggerZone}): $distance >? $previousDistance; min obj: $min")
+                Log.d("quest_action", "{${questAttractions.size}}: (${min.triggerZone}): $distance >? $previousDistance; min obj: $min")
                 var toReturn = AttractionStatus.Nothing
                 if(distance <= min.triggerZone){
                     toReturn = AttractionStatus.Success
-                    Log.d("location", "completedCount: $completedTimer")
+                    Log.d("quest_action", "completedCount: $completedTimer")
                     if(completedTimer < 3)
                         completedTimer++
                     else{
                         lastFounded = min
                         questAttractions.remove(min)
+                        Log.d("quest_action", " quest coml?: $questAttractionStartCount, ${questAttractions.size}")
                         if(questAttractions.size == 0)
                             toReturn = AttractionStatus.QuestCompleted
                         completedTimer = 0
@@ -78,8 +82,11 @@ class QuestProgress() : Parcelable {
                 else {
                     if (previousDistance != null) {
                         val diff = distance - previousDistance!!
-                        toReturn = if (abs(diff) > 0.5 && diff > 0)
+                        toReturn = if (abs(diff) > 0.5 && diff > 0) {
+                            Log.d("quest_action", "restart timer")
+                            completedTimer = 0
                             AttractionStatus.Colder
+                        }
                         else
                             AttractionStatus.Warmer
                     }
@@ -88,7 +95,7 @@ class QuestProgress() : Parcelable {
                 return toReturn
             }
             else {
-            Log.d("location", "Quest completed")
+            Log.d("quest_action", "Quest completed")
             }
         }
         return AttractionStatus.Nothing

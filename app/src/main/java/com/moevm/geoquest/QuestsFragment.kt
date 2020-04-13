@@ -177,6 +177,7 @@ class QuestsFragment : Fragment() {
                     .addOnSuccessListener { user_quests ->
                         val doesNotViewObjectsIds = user_quests.documents.map { it.id }
                         val toView = quests_list.filter { it.id !in doesNotViewObjectsIds }
+                        view?.findViewById<TextView>(R.id.available_quests_count)?.text = toView.size.toString()
                         val currentId = user_quests.documents.find{
                             it.data?.getValue("status") == QuestStatus.InProgress.toString()
                         }

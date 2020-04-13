@@ -160,13 +160,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var gmap: GoogleMap
     private var mCameraPosition: CameraPosition? = null
 
+
     private var mLocationPermissionGranted = false
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
 
     private var questArea: List<LatLng>? = null
     private var drawableQuestArea: Polygon? = null
-    private var questProgress: QuestProgress = QuestProgress()
+
     private var questId: Int = -1
+    private var questAttractionsCount: Int = 0
+    private var questFoundedAttractionsCount: Int = 0
+    private var questProgress: QuestProgress = QuestProgress()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -246,6 +251,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         )
                     )
                     if (questAttractions.size == attractionList.size) {
+                        questFoundedAttractionsCount = 0
+                        questAttractionsCount = questAttractions.size
                         questProgress.setupQuest(questAttractions, questId, userId)
                     }
                 }
@@ -343,7 +350,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun questCompleted() {
-        if (questId > 0) {
+        Log.d("quest_action", "Quest Completed!!, questId: $questId")
+        if (questId >= 0) {
             db.collection("Users")
                 .document(userId)
                 .collection("Quests")
@@ -351,21 +359,85 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 .set(mapOf("status" to QuestStatus.Completed))
                 .addOnSuccessListener {
                     Log.d("Sending_data", "success change to completed")
-                    questId = -1
                 }
                 .addOnFailureListener {
                     Log.d("Sending_data", "failure add")
                     //TODO: No internet connection
                 }
+            db.collection("Users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener {
+                    val keys = it.data?.keys
+                    if (keys != null && "Statistic" in keys) {
+                        val user_stat = it.data?.getValue("Statistic") as Map<String, Any?>
+                        val pointsFounded = user_stat.getValue("Points").toString().toInt()
+                        val questCompleted = user_stat.getValue("Quests").toString().toInt()
+                        db.collection("Users")
+                            .document(userId)
+                            .set(
+                                mapOf(
+                                    "Statistic" to mapOf(
+                                        "Points" to pointsFounded + questProgress.getQuestAttractionStartCount(),
+                                        "Quests" to questCompleted + 1
+                                    )
+                                )
+                            )
+                            .addOnSuccessListener {
+                                Log.d("quest_action", "update statistic successful")
+                            }
+                            .addOnFailureListener {
+                                Log.d("quest_action", "update statistic failure")
+                            }
+                    } else {
+                        db.collection("Users")
+                            .document(userId)
+                            .set(
+                                mapOf(
+                                    "Statistic" to mapOf(
+                                        "Points" to questProgress.getQuestAttractionStartCount(),
+                                        "Quests" to 1
+                                    )
+                                )
+                            )
+                            .addOnSuccessListener {
+                                Log.d("quest_action", "update statistic successful")
+                            }
+                            .addOnFailureListener {
+                                Log.d("quest_action", "update statistic failure")
+                            }
+                    }
+                }
+                .addOnFailureListener {
+                    Log.d("quest_action", "user stat fail")
+                    //TODO: No internet connection
+                }
+            questId = -1
         }
+    }
+
+    private fun updateCardsInfoProgress(distanceCardText:String,
+                                        distanceCardColor: String,
+                                        needFoundedCountUpdate: Boolean=false) {
+        view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.VISIBLE
+        view?.findViewById<CardView>(R.id.distance_card_view)
+            ?.setCardBackgroundColor(Color.parseColor(distanceCardColor))
+        view?.findViewById<TextView>(R.id.status)?.text = distanceCardText
+        if(needFoundedCountUpdate)
+        {
+            questFoundedAttractionsCount++
+            questAttractionsCount
+            view?.findViewById<TextView>(R.id.points_statistics)
+                ?.text = "$questFoundedAttractionsCount/$questAttractionsCount"
+        }
+
     }
 
     private fun updateCardInfo(result: AttractionStatus) {
         //TODO quest completed: congratulation, prob. statistic
         when (result) {
             AttractionStatus.Success -> {
-                view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.VISIBLE
-                val lastFounded = questProgress?.getLastFounded()
+                val lastFounded = questProgress.getLastFounded()
                 if (lastFounded != null) {
                     gmap.addMarker(
                         MarkerOptions()
@@ -373,24 +445,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             .title(lastFounded.name)
                     )
                 }
-                view?.findViewById<CardView>(R.id.distance_card_view)
-                    ?.setCardBackgroundColor(Color.parseColor("#E100FF19"))
-                view?.findViewById<TextView>(R.id.status)
-                    ?.text = "Точка найдена"
+                updateCardsInfoProgress("Точка найдена", "#E100FF19", true)
             }
             AttractionStatus.Colder -> {
-                view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.VISIBLE
-                view?.findViewById<CardView>(R.id.distance_card_view)
-                    ?.setCardBackgroundColor(Color.parseColor("#D457E1FF"))
-                view?.findViewById<TextView>(R.id.status)
-                    ?.text = "Холоднее"
+                updateCardsInfoProgress("Холоднее", "#D457E1FF")
             }
             AttractionStatus.Warmer -> {
-                view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.VISIBLE
-                view?.findViewById<CardView>(R.id.distance_card_view)
-                    ?.setCardBackgroundColor(Color.parseColor("#E1FFA800"))
-                view?.findViewById<TextView>(R.id.status)
-                    ?.text = "Теплее"
+                updateCardsInfoProgress("Теплее", "#E1FFA800")
             }
             AttractionStatus.QuestCompleted -> {
                 view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.GONE
@@ -409,7 +470,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             if (locationResult == null)
                 return
             val mLastLocation: Location = locationResult.lastLocation
-            val result = questProgress.checkDistanceToObject(mLastLocation) ?: AttractionStatus.Nothing
+            val result =
+                questProgress.checkDistanceToObject(mLastLocation)
             updateCardInfo(result)
         }
     }

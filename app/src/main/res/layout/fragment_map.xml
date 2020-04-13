@@ -41,16 +41,33 @@
         app:cardCornerRadius="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
+        <LinearLayout
             android:id="@+id/statistics"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginHorizontal="@dimen/small_margin"
-            android:gravity="center"
-            android:text="43 мин 13/37"
-            android:textColor="@color/black"
-            android:textSize="14sp" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/time_statistics"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginVertical="@dimen/small_margin"
+                android:layout_marginHorizontal="@dimen/small_margin"
+                android:gravity="center"
+                android:text="0 мин."
+                android:textColor="@color/black"
+                android:textSize="14sp" />
+            <TextView
+                android:id="@+id/points_statistics"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginVertical="@dimen/small_margin"
+                android:gravity="center"
+                android:layout_marginHorizontal="@dimen/small_margin"
+                android:text="0/0"
+                android:textColor="@color/black"
+                android:textSize="14sp" />
+        </LinearLayout>
+
     </androidx.cardview.widget.CardView>
 
     <ImageButton
