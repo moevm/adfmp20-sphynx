@@ -43,6 +43,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     companion object {
         private const val KEY_CAMERA_POSITION = "camera_position"
+        private const val KEY_QUEST_PROGRESS = "quest_status"
         private val petrog = listOf(
             LatLng(59.96342065914428, 30.26378779395241),
             LatLng(59.96352002665255, 30.26376094486086),
@@ -164,7 +165,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private var questArea: List<LatLng>? = null
     private var drawableQuestArea: Polygon? = null
-    private var questProgress = QuestProgress()
+    private var questProgress: QuestProgress = QuestProgress()
     private var questId: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -198,6 +199,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             Log.d("currentLocation", "savedInst:$savedInstanceState")
             mCameraPosition = savedInstanceState?.getParcelable(KEY_CAMERA_POSITION)
                 ?: CameraPosition.fromLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM)
+            Log.d("parcelable", "MapFragment: read from parcelable questProgress")
+            val tmp = savedInstanceState?.getParcelable<QuestProgress>(KEY_QUEST_PROGRESS)
+            questProgress = tmp ?: QuestProgress()
+            Log.d("parcelable", "MapFragment: result: $questProgress")
             Log.d("currentLocation", "camera position: $mCameraPosition")
             initMapAsync()
         } else {
@@ -252,49 +257,47 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun fillQuestInfo() {
-        if (userId != null) {
-            db.collection("Users")
-                .document(userId)
-                .collection("Quests")
-                .whereEqualTo("status", QuestStatus.InProgress)
-                .get()
-                .addOnSuccessListener { current_quest ->
-                    when (current_quest.size()) {
-                        0 -> {
-                            questId = -1
-                            drawableQuestArea?.remove()
-                            drawableQuestArea = null
-                        }
-                        1 -> {
-                            questId = current_quest.documents[0]!!.id.toInt()
-                            db.collection("Quests")
-                                .document(questId.toString())
-                                .get()
-                                .addOnSuccessListener { questInfo ->
+        db.collection("Users")
+            .document(userId)
+            .collection("Quests")
+            .whereEqualTo("status", QuestStatus.InProgress)
+            .get()
+            .addOnSuccessListener { current_quest ->
+                when (current_quest.size()) {
+                    0 -> {
+                        questId = -1
+                        drawableQuestArea?.remove()
+                        drawableQuestArea = null
+                    }
+                    1 -> {
+                        questId = current_quest.documents[0]!!.id.toInt()
+                        db.collection("Quests")
+                            .document(questId.toString())
+                            .get()
+                            .addOnSuccessListener { questInfo ->
 //                                    TODO: quest attraction
-                                    val attractions = questInfo.data?.get("Attractions")
-                                            as ArrayList<DocumentReference>
-                                    fillQuestAttractions(attractions)
-                                    val areas = questInfo.data?.get("Areas")
-                                            as ArrayList<DocumentReference>
-                                    if (areas.size != 1) {
-                                        Log.d("quest_action", "more than 1 quest area reference")
-                                    }
-                                    fillQuestArea(areas[0])
+                                val attractions = questInfo.data?.get("Attractions")
+                                        as ArrayList<DocumentReference>
+                                fillQuestAttractions(attractions)
+                                val areas = questInfo.data?.get("Areas")
+                                        as ArrayList<DocumentReference>
+                                if (areas.size != 1) {
+                                    Log.d("quest_action", "more than 1 quest area reference")
                                 }
-                                .addOnFailureListener {
-                                    // TODO sorry fail to load
-                                    Log.d("quest_action", "fail to load quest info")
-                                }
-
-                        }
-                        2 -> {
-                            throw Exception("more then 1 quest: $current_quest")
-                        }
+                                fillQuestArea(areas[0])
+                            }
+                            .addOnFailureListener {
+                                // TODO sorry fail to load
+                                Log.d("quest_action", "fail to load quest info")
+                            }
 
                     }
+                    2 -> {
+                        throw Exception("more then 1 quest: $current_quest")
+                    }
+
                 }
-        }
+            }
     }
 
     @SuppressLint("MissingPermission")
@@ -362,7 +365,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         when (result) {
             AttractionStatus.Success -> {
                 view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.VISIBLE
-                val lastFounded = questProgress.getLastFounded()
+                val lastFounded = questProgress?.getLastFounded()
                 if (lastFounded != null) {
                     gmap.addMarker(
                         MarkerOptions()
@@ -406,7 +409,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             if (locationResult == null)
                 return
             val mLastLocation: Location = locationResult.lastLocation
-            val result = questProgress.checkDistanceToObject(mLastLocation)
+            val result = questProgress.checkDistanceToObject(mLastLocation) ?: AttractionStatus.Nothing
             updateCardInfo(result)
         }
     }
@@ -498,10 +501,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         dialogBuilder
             .setMessage(getString(R.string.request_location_permissions))
             .setCancelable(false)
-            .setPositiveButton(getString(R.string.dialog_yes)) { dialog, id ->
+            .setPositiveButton(getString(R.string.dialog_yes)) { _, _ ->
                 requestLocationPermission()
             }
-            .setNegativeButton(getString(R.string.dialog_no)) { dialog, id ->
+            .setNegativeButton(getString(R.string.dialog_no)) { dialog, _ ->
                 dialog.cancel()
             }
         val alert = dialogBuilder.create()
@@ -510,8 +513,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putParcelable(KEY_CAMERA_POSITION, gmap.cameraPosition)
         super.onSaveInstanceState(outState)
+        Log.d("parcelable", "MapFragment: call onSaveInstanceState")
+        outState.putParcelable(KEY_CAMERA_POSITION, gmap.cameraPosition)
+        outState.putParcelable(KEY_QUEST_PROGRESS, questProgress)
     }
 
 }
