@@ -18,9 +18,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -45,8 +43,6 @@ import java.util.*
 class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
 
     companion object {
-        private const val KEY_CAMERA_POSITION = "camera_position"
-        private const val KEY_QUEST_PROGRESS = "quest_status"
         private val petrog = listOf(
             LatLng(59.96342065914428, 30.26378779395241),
             LatLng(59.96352002665255, 30.26376094486086),
@@ -151,10 +147,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
             LatLng(59.95653126368728, 30.27915929710315),
             LatLng(59.95981243283747, 30.27580690776725)
         )
-        private var timer: Timer = Timer()
-        private var timerValue: Int = -1
         private const val DEFAULT_ZOOM = 12.0f
-        private val DEFAULT_LOCATION = LatLng(59.93861111111111, 30.31388888888889)
         private const val REQUEST_PERMISSION_COARSE = 1
     }
 
@@ -163,15 +156,18 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
 
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var gmap: GoogleMap
-    private var mCameraPosition: CameraPosition? = null
 
     private var mLocationPermissionGranted = false
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
 
     private var questArea: List<LatLng>? = null
     private var drawableQuestArea: Polygon? = null
+    private var foundedQuestsPoints: MutableList<Marker>? = null
 
-    private var questId: Int = -1
+    private var timer: Timer = Timer()
+    private var timerValue: Int = -1
+
+    private var mQuestId: Int = -1
     private var questAttractionsCount: Int = 0
     private var questFoundedAttractionsCount: Int = 0
     private var questProgress: QuestProgress = QuestProgress()
@@ -183,7 +179,14 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
 
     fun startQuest(questId: Int){
         Log.d("Sending_data", "start quest")
-        fillQuestInfo()
+        if(foundedQuestsPoints != null){
+            foundedQuestsPoints?.forEach{
+                it.remove()
+            }
+        }
+        foundedQuestsPoints = mutableListOf()
+        mQuestId = questId
+        fillQuestInfo(questId)
     }
 
     fun setOnMapActionListener(callback: MapActionListener) {
@@ -201,9 +204,32 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
+    private fun checkCurrentQuestAlreadySelected(){
+        db.collection("Users")
+            .document(userId)
+            .collection("Quests")
+            .whereEqualTo("status", QuestStatus.InProgress)
+            .get()
+            .addOnSuccessListener { current_user_quest ->
+                val currentQuest = current_user_quest.documents
+                if (currentQuest.size == 1) {
+                    db.collection("Quests").document(currentQuest[0].id).get()
+                        .addOnSuccessListener {
+                            val questId = it?.id?.toIntOrNull()
+                            if(questId != null)
+                            startQuest(questId)
+                        }
+                        .addOnFailureListener {
+                            // TODO: Sorry fail to load
+                        }
+                }
+            }
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         Log.d("Sending_data", "recreate map")
         super.onActivityCreated(savedInstanceState)
+        checkCurrentQuestAlreadySelected()
         view?.findViewById<ImageButton>(R.id.area_button)
             ?.setOnClickListener(onShowQuestAreaListener)
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
@@ -217,8 +243,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     }
 
     private val onShowQuestAreaListener = View.OnClickListener {
-        Log.d("quest_action", "Quest area: $drawableQuestArea, $questId")
-        drawableQuestArea = if (drawableQuestArea == null && questId >= 0) {
+        drawableQuestArea = if (questArea != null && drawableQuestArea == null) {
             gmap.addPolygon(getQuestArea())
         } else {
             drawableQuestArea?.remove()
@@ -266,48 +291,25 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
 
     }
 
-    private fun fillQuestInfo() {
-        db.collection("Users")
-            .document(userId)
-            .collection("Quests")
-            .whereEqualTo("status", QuestStatus.InProgress)
+    private fun fillQuestInfo(questId: Int) {
+        db.collection("Quests")
+            .document(questId.toString())
             .get()
-            .addOnSuccessListener { current_quest ->
-                when (current_quest.size()) {
-                    0 -> {
-                        questId = -1
-                        drawableQuestArea?.remove()
-                        drawableQuestArea = null
-                    }
-                    1 -> {
-                        questId = current_quest.documents[0]!!.id.toInt()
-                        Log.d("TimerTag", "start timer task")
-                        startTimer()
-                        db.collection("Quests")
-                            .document(questId.toString())
-                            .get()
-                            .addOnSuccessListener { questInfo ->
-//                                    TODO: quest attraction
-                                val attractions = questInfo.data?.get("Attractions")
-                                        as ArrayList<DocumentReference>
-                                fillQuestAttractions(attractions)
-                                val areas = questInfo.data?.get("Areas")
-                                        as ArrayList<DocumentReference>
-                                if (areas.size != 1) {
-                                    Log.d("quest_action", "more than 1 quest area reference")
-                                }
-                                fillQuestArea(areas[0])
-                            }
-                            .addOnFailureListener {
-                                // TODO sorry fail to load
-                                Log.d("quest_action", "fail to load quest info")
-                            }
-                    }
-                    2 -> {
-                        throw Exception("more then 1 quest: $current_quest")
-                    }
-
+            .addOnSuccessListener { questInfo ->
+                startTimer()
+                val attractions = questInfo.data?.get("Attractions")
+                        as ArrayList<DocumentReference>
+                fillQuestAttractions(attractions)
+                val areas = questInfo.data?.get("Areas")
+                        as ArrayList<DocumentReference>
+                if (areas.size != 1) {
+                    Log.d("quest_action", "more than 1 quest area reference")
                 }
+                fillQuestArea(areas[0])
+            }
+            .addOnFailureListener {
+                // TODO sorry fail to load
+                Log.d("quest_action", "fail to load quest info")
             }
     }
 
@@ -349,6 +351,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                 mHandler.obtainMessage(1).sendToTarget()
             }
         }, 0, 10_000)
+        // TODO : timer period to 60_000
     }
 
     var mHandler: Handler = object : Handler() {
@@ -359,12 +362,12 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     }
 
     private fun questCompleted() {
-        Log.d("quest_action", "Quest Completed!!, questId: $questId")
-        if (questId >= 0) {
+        Log.d("quest_action", "Quest Completed!!, questId: $mQuestId")
+        if (mQuestId >= 0) {
             db.collection("Users")
                 .document(userId)
                 .collection("Quests")
-                .document(questId.toString())
+                .document(mQuestId.toString())
                 .set(mapOf("status" to QuestStatus.Completed))
                 .addOnSuccessListener {
                     Log.d("Sending_data", "success change to completed")
@@ -395,6 +398,9 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                                 )
                             )
                             .addOnSuccessListener {
+                                timer.cancel()
+                                timer = Timer()
+                                timerValue = -1
                                 callback.onQuestCompleted()
                                 Log.d("quest_action", "update statistic successful")
                             }
@@ -425,12 +431,9 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                     Log.d("quest_action", "user stat fail")
                     //TODO: No internet connection
                 }
-            questId = -1
+            mQuestId = -1
         }
         Log.d("TimerTag", "timer cancel")
-        timer.cancel()
-        timer = Timer()
-        timerValue = -1
         view?.findViewById<TextView>(R.id.points_statistics)
             ?.text = getString(R.string.quest_progress_points, questAttractionsCount, questAttractionsCount)
     }
@@ -457,10 +460,12 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     private fun addLastFoundedQuestPoint(){
         val lastFounded = questProgress.getLastFounded()
         if (lastFounded != null) {
-            gmap.addMarker(
-                MarkerOptions()
-                    .position(lastFounded.coordinates)
-                    .title(lastFounded.name)
+            foundedQuestsPoints?.add(
+                gmap.addMarker(
+                    MarkerOptions()
+                        .position(lastFounded.coordinates)
+                        .title(lastFounded.name)
+                )
             )
         }
     }
@@ -522,6 +527,12 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
         timer = Timer()
         timerValue = -1
         questProgress = QuestProgress()
+        if(foundedQuestsPoints != null){
+            foundedQuestsPoints?.forEach {
+                it.remove()
+            }
+            foundedQuestsPoints = null
+        }
         view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.GONE
         view?.findViewById<CardView>(R.id.statistics)?.visibility = View.GONE
     }
@@ -536,9 +547,9 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
         if (mLocationPermissionGranted) {
             gmap.isMyLocationEnabled = true
             Log.d("currentLocation", "arguments: $arguments")
-            if (questId >= 0) {
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(mCameraPosition))
-            }
+//            if (questId >= 0) {
+//                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(mCameraPosition))
+//            }
         }
     }
 
