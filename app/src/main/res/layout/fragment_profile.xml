@@ -56,7 +56,6 @@
             android:layout_height="wrap_content"
             android:textColor="@color/black"
             android:layout_marginBottom="@dimen/default_margin"
-            android:text="Пройдено: ???"
             android:textSize="16sp" />
 
         <TextView

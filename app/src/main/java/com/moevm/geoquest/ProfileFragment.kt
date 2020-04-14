@@ -45,10 +45,13 @@ class ProfileFragment : FragmentUpdateUI() {
                 .document(userId)
                 .get()
                 .addOnSuccessListener {
-                    val data = it.data?.getValue("Statistic") as Map<String, Long>?
-                    val points = data?.getValue("Points").toString().toLongOrNull() ?: 0
-                    val quests = data?.getValue("Quests").toString().toLongOrNull() ?: 0
-                    val time = data?.getValue("Time").toString().toLongOrNull() ?: 0
+                    val data = it.data?.getValue("Statistic") as Map<String, *>?
+                    val points = data?.getValue("Points").toString().toLong()
+                    val quests = data?.getValue("Quests").toString().toLong()
+                    val time = data?.getValue("Time").toString().toLong()
+                    val distance = data?.getValue("Distance").toString().toDouble() / 1000
+                    view?.findViewById<TextView>(R.id.walked_total)
+                        ?.text = getString(R.string.profile_walked_total, distance)
                     view?.findViewById<TextView>(R.id.quests_total)
                         ?.text = getString(R.string.profile_quests_total, quests)
                     view?.findViewById<TextView>(R.id.spent_time)

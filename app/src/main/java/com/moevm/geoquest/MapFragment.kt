@@ -382,10 +382,11 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                 .addOnSuccessListener {
                     val keys = it.data?.keys
                     if (keys != null && "Statistic" in keys) {
-                        val userStat = it.data?.getValue("Statistic") as Map<String, Any?>
+                        val userStat = it.data?.getValue("Statistic") as Map<String, *>
                         val pointsFounded = userStat.getValue("Points").toString().toInt()
                         val questsCompleted = userStat.getValue("Quests").toString().toInt()
                         val questsTime = userStat.getValue("Time").toString().toInt()
+                        val travelledDistance = userStat.getValue("Distance").toString().toDouble()
                         db.collection("Users")
                             .document(userId)
                             .set(
@@ -393,7 +394,8 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                                     "Statistic" to mapOf(
                                         "Points" to pointsFounded + questProgress.getQuestAttractionStartCount(),
                                         "Quests" to questsCompleted + 1,
-                                        "Time" to questsTime + timerValue
+                                        "Time" to questsTime + timerValue,
+                                        "Distance" to travelledDistance + questProgress.getTravelledDistance()
                                     )
                                 )
                             )
@@ -415,7 +417,8 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                                     "Statistic" to mapOf(
                                         "Points" to questProgress.getQuestAttractionStartCount(),
                                         "Quests" to 1,
-                                        "Time" to timerValue
+                                        "Time" to timerValue,
+                                        "Distance" to questProgress.getTravelledDistance()
                                     )
                                 )
                             )
@@ -485,9 +488,9 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
             }
             AttractionStatus.QuestCompleted -> {
                 view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.GONE
-                Toast.makeText(context,
-                    "Поздравляем! Вы прошли квест за $timerValue минут и нашли $questAttractionsCount", Toast.LENGTH_LONG)
-                    .show()
+                Toast.makeText(context, "Поздравляем! Вы прошли квест. " +
+                            "Затраченное время: $timerValue. " +
+                            "Найдено точек: $questAttractionsCount", Toast.LENGTH_LONG).show()
                 addLastFoundedQuestPoint()
                 questCompleted()
             }

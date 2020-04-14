@@ -47,7 +47,7 @@ class QuestsFragment : FragmentUpdateUI() {
             return@OnItemClickListener
         }
         val dialogBuilder = AlertDialog.Builder(context)
-        dialogBuilder.setMessage("questName")
+        dialogBuilder.setMessage(mQuestsArray[position].name)
             .setCancelable(false)
             .setPositiveButton(getString(R.string.dialog_yes)) { _, _ ->
                 questApproved(position)

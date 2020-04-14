@@ -33,6 +33,7 @@
     <string name="available_quest_count_fill">Количество доступных квестов: %1$d</string>
     <string name="quest_progress_points">%1$d/%2$d</string>
     <string name="quest_progress_time">%1$d мин.</string>
+    <string name="profile_walked_total">Пройденое рассттояние: %1$.1f км</string>
     <string name="profile_quests_total">Пройдено квестов: %1$d</string>
     <string name="profile_spent_time">Потраченное время: %1$d</string>
     <string name="profile_points_discovered">Всего точек открыто: %1$d</string>
