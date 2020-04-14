@@ -42,7 +42,7 @@ import com.moevm.geoquest.models.QuestStatus
 import java.util.*
 
 
-class MapFragment : Fragment(), OnMapReadyCallback {
+class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
 
     companion object {
         private const val KEY_CAMERA_POSITION = "camera_position"
@@ -373,6 +373,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    override fun updateUI(){
+        Toast.makeText(context, "updateUI map", Toast.LENGTH_SHORT).show()
+    }
+
 
     private fun questCompleted() {
         Log.d("quest_action", "Quest Completed!!, questId: $questId")
@@ -397,14 +401,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     if (keys != null && "Statistic" in keys) {
                         val userStat = it.data?.getValue("Statistic") as Map<String, Any?>
                         val pointsFounded = userStat.getValue("Points").toString().toInt()
-                        val questCompleted = userStat.getValue("Quests").toString().toInt()
+                        val questsCompleted = userStat.getValue("Quests").toString().toInt()
+                        val questsTime = userStat.getValue("Time").toString().toInt()
                         db.collection("Users")
                             .document(userId)
                             .set(
                                 mapOf(
                                     "Statistic" to mapOf(
                                         "Points" to pointsFounded + questProgress.getQuestAttractionStartCount(),
-                                        "Quests" to questCompleted + 1
+                                        "Quests" to questsCompleted + 1,
+                                        "Time" to questsTime + timerValue
                                     )
                                 )
                             )
@@ -421,7 +427,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 mapOf(
                                     "Statistic" to mapOf(
                                         "Points" to questProgress.getQuestAttractionStartCount(),
-                                        "Quests" to 1
+                                        "Quests" to 1,
+                                        "Time" to timerValue
                                     )
                                 )
                             )
@@ -613,9 +620,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        Log.d("parcelable", "MapFragment: call onSaveInstanceState")
-        outState.putParcelable(KEY_CAMERA_POSITION, gmap.cameraPosition)
-        outState.putParcelable(KEY_QUEST_PROGRESS, questProgress)
+//        Log.d("parcelable", "MapFragment: call onSaveInstanceState")
+//        outState.putParcelable(KEY_CAMERA_POSITION, gmap.cameraPosition)
+//        outState.putParcelable(KEY_QUEST_PROGRESS, questProgress)
     }
 }
 

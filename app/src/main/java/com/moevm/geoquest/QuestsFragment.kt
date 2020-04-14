@@ -17,7 +17,7 @@ import com.moevm.geoquest.models.QuestStatus
 import com.squareup.picasso.Picasso
 
 
-class QuestsFragment : Fragment() {
+class QuestsFragment : FragmentUpdateUI() {
     private val db = Firebase.firestore
     private val userId = FirebaseAuth.getInstance().currentUser?.uid
     private lateinit var callback: OnQuestActionListener
@@ -76,6 +76,11 @@ class QuestsFragment : Fragment() {
         alert.show()
     }
 
+    override fun updateUI(){
+        updateCurrentQuestVisible()
+        fillQuestArray()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -86,11 +91,6 @@ class QuestsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d("Sending_data", "saved inst: $savedInstanceState")
-        if (savedInstanceState != null) {
-            mIsQuestSelected = savedInstanceState.getBoolean("isQuestSelected")
-            mSelectedQuestId = savedInstanceState.getInt("currentQuestId")
-        }
         updateCurrentQuestVisible()
     }
 
@@ -277,11 +277,11 @@ class QuestsFragment : Fragment() {
     }
 
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putBoolean("isQuestSelected", mIsQuestSelected)
-        outState.putInt("currentQuestId", mSelectedQuestId)
-    }
+//    override fun onSaveInstanceState(outState: Bundle) {
+//        super.onSaveInstanceState(outState)
+//        outState.putBoolean("isQuestSelected", mIsQuestSelected)
+//        outState.putInt("currentQuestId", mSelectedQuestId)
+//    }
 }
 
 

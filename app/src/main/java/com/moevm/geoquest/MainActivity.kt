@@ -8,23 +8,26 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 
+open class FragmentUpdateUI: Fragment(){
+    open fun updateUI(){}
+}
+
 class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
 
     lateinit var auth: FirebaseAuth
     lateinit var bottomView: BottomNavigationView
-    private lateinit var stateHelper: FragmentStateHelper
-    private val fragments = mutableMapOf<Int, Fragment>()
+    private val fragments = mutableMapOf<Int, FragmentUpdateUI>()
 
     private val navigationSelectionListener =
         BottomNavigationView.OnNavigationItemSelectedListener {
             val newFragment = fragments[it.itemId]!!
-            stateHelper.restoreState(newFragment, it.itemId)
-
-            supportFragmentManager.beginTransaction().apply {
-                show(newFragment)
-                hide(fragments[bottomView.selectedItemId]!!)
-                commit()
-            }
+            if(it.itemId != bottomView.selectedItemId)
+                newFragment.updateUI()
+                supportFragmentManager.beginTransaction().apply {
+                    show(newFragment)
+                    hide(fragments[bottomView.selectedItemId]!!)
+                    commit()
+                }
 
             true
         }
@@ -36,7 +39,6 @@ class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
         if (auth.currentUser == null)
             startActivity(Intent(this, LoginActivity::class.java))
         bottomView = findViewById(R.id.bottom_navigation)
-        stateHelper = FragmentStateHelper(supportFragmentManager)
 
         fragments[R.id.bottom_navigation_quests] = QuestsFragment()
         fragments[R.id.bottom_navigation_map] = MapFragment()
@@ -50,17 +52,15 @@ class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
         supportFragmentManager.beginTransaction().show(fragments[R.id.bottom_navigation_quests]!!)
             .commit()
 
-        Log.d("Sending_data", "fragments: ${supportFragmentManager.fragments}")
-
         bottomView.setOnNavigationItemSelectedListener(navigationSelectionListener)
     }
 
-    override fun onQuestSelected(position: Int) {
-        Log.d("Sending_data", "Quest selected MainActivity: $position")
+    override fun onQuestSelected(questId: Int) {
+        Log.d("Sending_data", "Quest selected MainActivity: $questId")
         var data = fragments[R.id.bottom_navigation_map]?.arguments
         if (data == null)
             data = Bundle()
-        data.putInt("questId", position)
+        data.putInt("questId", questId)
         data.putBoolean("needCameraChange", true)
         fragments[R.id.bottom_navigation_map]?.arguments = data
 

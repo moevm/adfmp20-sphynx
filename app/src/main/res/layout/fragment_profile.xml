@@ -36,13 +36,13 @@
             android:src="@drawable/ic_exit" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/small_margin"
-        android:text="Антон Филатов"
-        android:textSize="16sp" />
+<!--    <TextView-->
+<!--        android:id="@+id/name"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginBottom="@dimen/small_margin"-->
+<!--        android:text="Антон Филатов"-->
+<!--        android:textSize="16sp" />-->
 
     <LinearLayout
         android:orientation="vertical"
@@ -56,7 +56,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/black"
             android:layout_marginBottom="@dimen/default_margin"
-            android:text="Пройдено: 213км"
+            android:text="Пройдено: ???"
             android:textSize="16sp" />
 
         <TextView
@@ -65,7 +65,6 @@
             android:layout_height="wrap_content"
             android:textColor="@color/black"
             android:layout_marginBottom="@dimen/default_margin"
-            android:text="Пройдено квестов: 12"
             android:textSize="16sp" />
 
         <TextView
@@ -74,7 +73,6 @@
             android:layout_height="wrap_content"
             android:textColor="@color/black"
             android:layout_marginBottom="@dimen/default_margin"
-            android:text="Потраченной время: 14ч 23м"
             android:textSize="16sp" />
 
         <TextView
@@ -83,7 +81,6 @@
             android:layout_height="wrap_content"
             android:textColor="@color/black"
             android:layout_marginBottom="@dimen/default_margin"
-            android:text="Всего точек открыто: 432"
             android:textSize="16sp" />
 
     </LinearLayout>
