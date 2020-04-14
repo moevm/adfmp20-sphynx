@@ -30,7 +30,7 @@
     <string name="completed_quests">Пройденные квесты</string>
     <string name="request_location_permissions_title">Разрешения приложения</string>
     <string name="request_location_permissions">Без доступа к местроположению устройства невозможно проходить квесты. Разрешить доступ?</string>
-    <string name="available_quest_count_fill">Количество доступных квестов:&#160;</string>
+    <string name="available_quest_count_fill">Количество доступных квестов: %1$d</string>
     <string name="quest_progress_points">%1$d/%2$d</string>
     <string name="quest_progress_time">%1$d мин.</string>
     <string name="profile_quests_total">Пройдено квестов: %1$d</string>

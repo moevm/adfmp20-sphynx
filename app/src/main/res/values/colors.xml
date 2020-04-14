@@ -9,4 +9,5 @@
     <color name="white">#FFFFFF</color>
     <color name="colder">#D457E1FF</color>
     <color name="questArea">#3303AD00</color>
+<!--    TODO quest progress colors-->
 </resources>

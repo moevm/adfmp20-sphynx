@@ -165,7 +165,6 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     private lateinit var gmap: GoogleMap
     private var mCameraPosition: CameraPosition? = null
 
-
     private var mLocationPermissionGranted = false
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
 
@@ -177,6 +176,19 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     private var questFoundedAttractionsCount: Int = 0
     private var questProgress: QuestProgress = QuestProgress()
 
+    private lateinit var callback: MapActionListener
+    interface MapActionListener {
+        fun onQuestCompleted()
+    }
+
+    fun startQuest(questId: Int){
+        Log.d("Sending_data", "start quest")
+        fillQuestInfo()
+    }
+
+    fun setOnMapActionListener(callback: MapActionListener) {
+        this.callback = callback
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -186,35 +198,18 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-//        retainInstance = true
-        fillQuestInfo()
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
+        Log.d("Sending_data", "recreate map")
         super.onActivityCreated(savedInstanceState)
-
         view?.findViewById<ImageButton>(R.id.area_button)
             ?.setOnClickListener(onShowQuestAreaListener)
-
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
-        questId = arguments?.getInt("questId") ?: -1
-        if (questId == -1) {
-            questProgress.questGiveUp()
-        }
-        Log.d("currentLocation", "questId: $questId")
-
         mLocationPermissionGranted = checkLocationPermission()
         if (mLocationPermissionGranted) {
             getLastLocation()
-            Log.d("currentLocation", "savedInst:$savedInstanceState")
-            mCameraPosition = savedInstanceState?.getParcelable(KEY_CAMERA_POSITION)
-                ?: CameraPosition.fromLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM)
-            Log.d("parcelable", "MapFragment: read from parcelable questProgress")
-            val tmp = savedInstanceState?.getParcelable<QuestProgress>(KEY_QUEST_PROGRESS)
-            questProgress = tmp ?: QuestProgress()
-            Log.d("parcelable", "MapFragment: result: $questProgress")
-            Log.d("currentLocation", "camera position: $mCameraPosition")
             initMapAsync()
         } else {
             requestLocationPermission()
@@ -259,7 +254,9 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                     if (questAttractions.size == attractionList.size) {
                         questFoundedAttractionsCount = 0
                         questAttractionsCount = questAttractions.size
-                        questProgress.setupQuest(questAttractions, questId, userId)
+                        Log.d("Sending_data","questAttractionsCount: $questAttractionsCount")
+                        updateCardsInfoProgress("Loading", "#FFFFFFFF", true)
+                        questProgress.setupQuest(questAttractions)
                     }
                 }
                 .addOnFailureListener {
@@ -317,17 +314,9 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     @SuppressLint("MissingPermission")
     private fun getLastLocation() {
         if (checkLocationPermission()) {
-            Log.d("currentLocation", "Permissions exist, check enabled location")
             if (isLocationEnabled()) {
-                Log.d("currentLocation", "Location enabled, add listener")
-                mFusedLocationClient.lastLocation.addOnCompleteListener { task ->
-                    val location: Location? = task.result
+                mFusedLocationClient.lastLocation.addOnCompleteListener { _ ->
                     requestNewLocationData()
-                    if (location == null) {
-                        Log.d("currentLocation", "Location is null, call new location data")
-                    } else {
-                        Log.d("currentLocation", "current location: $location")
-                    }
                 }
             } else {
                 Toast.makeText(context, "Turn on location", Toast.LENGTH_LONG).show()
@@ -335,14 +324,12 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                 startActivity(intent)
             }
         } else {
-            Log.d("currentLocation", "Permissions has not exist, request")
             permissionInfoAndRequest()
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun requestNewLocationData() {
-        Log.d("currentLocation", "configure and run mFusedLocationClient")
         val mLocationRequest = LocationRequest()
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         mLocationRequest.interval = 5000
@@ -353,17 +340,15 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
             mLocationRequest, mLocationCallback,
             Looper.myLooper()
         )
-
     }
 
     private fun startTimer() {
-        Log.d("TimerTag", "Start timer")
         timer.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 timerValue += 1
                 mHandler.obtainMessage(1).sendToTarget()
             }
-        }, 0, 60_000)
+        }, 0, 10_000)
     }
 
     var mHandler: Handler = object : Handler() {
@@ -372,11 +357,6 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
             view?.findViewById<TextView>(R.id.time_statistics)?.text = getString(R.string.quest_progress_time, timerValue)
         }
     }
-
-    override fun updateUI(){
-        Toast.makeText(context, "updateUI map", Toast.LENGTH_SHORT).show()
-    }
-
 
     private fun questCompleted() {
         Log.d("quest_action", "Quest Completed!!, questId: $questId")
@@ -415,6 +395,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                                 )
                             )
                             .addOnSuccessListener {
+                                callback.onQuestCompleted()
                                 Log.d("quest_action", "update statistic successful")
                             }
                             .addOnFailureListener {
@@ -448,6 +429,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
         }
         Log.d("TimerTag", "timer cancel")
         timer.cancel()
+        timer = Timer()
         timerValue = -1
         view?.findViewById<TextView>(R.id.points_statistics)
             ?.text = getString(R.string.quest_progress_points, questAttractionsCount, questAttractionsCount)
@@ -456,6 +438,8 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     private fun updateCardsInfoProgress(distanceCardText:String,
                                         distanceCardColor: String,
                                         needFoundedCountUpdate: Boolean=false) {
+//        Log.d("Sending_data", "update card info")
+        view?.findViewById<CardView>(R.id.statistics)?.visibility = View.VISIBLE
         view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.VISIBLE
         view?.findViewById<CardView>(R.id.distance_card_view)
             ?.setCardBackgroundColor(Color.parseColor(distanceCardColor))
@@ -496,12 +480,15 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
             }
             AttractionStatus.QuestCompleted -> {
                 view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.GONE
-                Toast.makeText(context, "Поздравляем! Вы прошли квест", Toast.LENGTH_LONG).show()
+                Toast.makeText(context,
+                    "Поздравляем! Вы прошли квест за $timerValue минут и нашли $questAttractionsCount", Toast.LENGTH_LONG)
+                    .show()
                 addLastFoundedQuestPoint()
                 questCompleted()
             }
             AttractionStatus.Nothing -> {
                 view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.GONE
+                view?.findViewById<CardView>(R.id.statistics)?.visibility = View.GONE
             }
         }
 
@@ -527,6 +514,16 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
             .fillColor(ContextCompat.getColor(context!!, R.color.questArea))
             .addAll(questArea)
             .strokeWidth(4.0f)
+    }
+
+    fun questGiveUp(){
+        Log.d("Sending_data", "MapFrag quest give up")
+        timer.cancel()
+        timer = Timer()
+        timerValue = -1
+        questProgress = QuestProgress()
+        view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.GONE
+        view?.findViewById<CardView>(R.id.statistics)?.visibility = View.GONE
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -618,12 +615,12 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
         alert.show()
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
+//    override fun onSaveInstanceState(outState: Bundle) {
+//        super.onSaveInstanceState(outState)
 //        Log.d("parcelable", "MapFragment: call onSaveInstanceState")
 //        outState.putParcelable(KEY_CAMERA_POSITION, gmap.cameraPosition)
 //        outState.putParcelable(KEY_QUEST_PROGRESS, questProgress)
-    }
+//    }
 }
 
 operator fun LatLng.plus(latLng: LatLng): LatLng? {

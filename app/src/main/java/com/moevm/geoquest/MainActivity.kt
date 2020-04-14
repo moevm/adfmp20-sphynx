@@ -12,7 +12,7 @@ open class FragmentUpdateUI: Fragment(){
     open fun updateUI(){}
 }
 
-class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
+class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener, MapFragment.MapActionListener{
 
     lateinit var auth: FirebaseAuth
     lateinit var bottomView: BottomNavigationView
@@ -21,14 +21,14 @@ class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
     private val navigationSelectionListener =
         BottomNavigationView.OnNavigationItemSelectedListener {
             val newFragment = fragments[it.itemId]!!
-            if(it.itemId != bottomView.selectedItemId)
-                newFragment.updateUI()
+            if(it.itemId != bottomView.selectedItemId) {
                 supportFragmentManager.beginTransaction().apply {
                     show(newFragment)
                     hide(fragments[bottomView.selectedItemId]!!)
                     commit()
                 }
-
+                newFragment.updateUI()
+            }
             true
         }
 
@@ -56,28 +56,26 @@ class MainActivity : AppCompatActivity(), QuestsFragment.OnQuestActionListener {
     }
 
     override fun onQuestSelected(questId: Int) {
-        Log.d("Sending_data", "Quest selected MainActivity: $questId")
-        var data = fragments[R.id.bottom_navigation_map]?.arguments
-        if (data == null)
-            data = Bundle()
-        data.putInt("questId", questId)
-        data.putBoolean("needCameraChange", true)
-        fragments[R.id.bottom_navigation_map]?.arguments = data
-
+        Log.d("Sending_data", "onQuestSelected")
+        (fragments[R.id.bottom_navigation_map] as MapFragment).startQuest(questId)
         bottomView.selectedItemId = R.id.bottom_navigation_map
     }
 
     override fun onQuestGiveUp() {
-        var data = fragments[R.id.bottom_navigation_map]?.arguments
-        if (data == null)
-            data = Bundle()
-        data.putInt("questId", -1)
+        Log.d("Sending_data", "onQuestGiveUp")
+        (fragments[R.id.bottom_navigation_map] as MapFragment).questGiveUp()
+    }
+
+    override fun onQuestCompleted() {
+        Log.d("Sending_data", "quest completed")
     }
 
     override fun onAttachFragment(fragment: Fragment) {
-        Log.d("Sending_data", "Quest Fragment attached")
         if (fragment is QuestsFragment) {
-            fragment.setOnQuestActionListener(this)
+            fragment.setOnQuestsActionListener(this)
+        }
+        else if(fragment is MapFragment){
+            fragment.setOnMapActionListener(this)
         }
     }
 

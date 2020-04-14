@@ -43,11 +43,11 @@ class QuestProgress() : Parcelable {
         questAttractionStartCount = 0
     }
 
-    fun setupQuest(qa: MutableList<AttractionModel>, qi:Int, uId: String) {
+    fun setupQuest(qa: MutableList<AttractionModel>) {
         this.questSelected = true
         this.questAttractions = qa
         this.questAttractionStartCount = qa.size
-        Log.d("location", "attractions object: ${this.questAttractions}")
+        Log.d("Sending_data", "attractions object: ${this.questAttractions}")
     }
 
     fun checkDistanceToObject(location: Location): AttractionStatus {

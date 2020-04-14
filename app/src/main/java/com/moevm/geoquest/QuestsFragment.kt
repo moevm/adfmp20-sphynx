@@ -1,6 +1,7 @@
 package com.moevm.geoquest
 
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -20,20 +21,18 @@ import com.squareup.picasso.Picasso
 class QuestsFragment : FragmentUpdateUI() {
     private val db = Firebase.firestore
     private val userId = FirebaseAuth.getInstance().currentUser?.uid
-    private lateinit var callback: OnQuestActionListener
+    private lateinit var callback: QuestsActionListener
     private lateinit var mListView: ListView
     private var mIsQuestSelected: Boolean = false
-    private var mSelectedQuestId: Int = -1
     private var mQuestsArray: ArrayList<QuestModel> = arrayListOf()
     private lateinit var mQuestsArrayAdapter: ArrayAdapter<QuestModel>
     private var currentQuest: QuestModel? = null
 
-    interface OnQuestActionListener {
+    interface QuestsActionListener {
         fun onQuestSelected(position: Int)
         fun onQuestGiveUp()
     }
-
-    fun setOnQuestActionListener(callback: OnQuestActionListener) {
+    fun setOnQuestsActionListener(callback: QuestsActionListener) {
         this.callback = callback
     }
 
@@ -96,7 +95,6 @@ class QuestsFragment : FragmentUpdateUI() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
         if (view == null) {
             return
         }
@@ -178,7 +176,7 @@ class QuestsFragment : FragmentUpdateUI() {
                         val doesNotViewObjectsIds = user_quests.documents.map { it.id }
                         val toView = quests_list.filter { it.id !in doesNotViewObjectsIds }
                         view?.findViewById<TextView>(R.id.available_quests_count)?.text =
-                            toView.size.toString()
+                            getString(R.string.available_quest_count_fill, toView.size)
                         val currentId = user_quests.documents.find {
                             it.data?.getValue("status") == QuestStatus.InProgress.toString()
                         }
@@ -231,10 +229,8 @@ class QuestsFragment : FragmentUpdateUI() {
         currentQuest = mQuestsArray[position]
         if (currentQuest == null)
             return
-        Log.d("Sending_data", "Quest selected questList: $position")
-        Log.d("Sending_data", "id: $position; model: $currentQuest")
         mIsQuestSelected = true
-        mSelectedQuestId = currentQuest!!.id
+        val questId = currentQuest!!.id
         if (userId != null) {
             db.collection("Users")
                 .document(userId)
@@ -242,14 +238,13 @@ class QuestsFragment : FragmentUpdateUI() {
                 .document(currentQuest!!.id.toString())
                 .set(mapOf("status" to QuestStatus.InProgress))
                 .addOnSuccessListener {
-                    Log.d("Sending_data", "success add")
                     updateCurrentQuestVisible()
                     mQuestsArrayAdapter.remove(currentQuest)
-                    callback.onQuestSelected(mSelectedQuestId)
+                    callback.onQuestSelected(questId)
                 }
                 .addOnFailureListener {
                     currentQuest = null
-                    Log.d("Sending_data", "failure add")
+                    mIsQuestSelected = false
                     //TODO: No internet connection
                 }
         }
@@ -265,9 +260,10 @@ class QuestsFragment : FragmentUpdateUI() {
                 .set(mapOf("status" to QuestStatus.Nothing))
                 .addOnSuccessListener {
                     mIsQuestSelected = false
-                    Log.d("Sending_data", "success remove current")
                     updateCurrentQuestVisible()
                     mQuestsArrayAdapter.add(currentQuest)
+                    view?.findViewById<TextView>(R.id.available_quests_count)?.text =
+                        getString(R.string.available_quest_count_fill, mQuestsArray.size)
                     currentQuest = null
                     callback.onQuestGiveUp()
 
@@ -276,12 +272,6 @@ class QuestsFragment : FragmentUpdateUI() {
         }
     }
 
-
-//    override fun onSaveInstanceState(outState: Bundle) {
-//        super.onSaveInstanceState(outState)
-//        outState.putBoolean("isQuestSelected", mIsQuestSelected)
-//        outState.putInt("currentQuestId", mSelectedQuestId)
-//    }
 }
 
 
