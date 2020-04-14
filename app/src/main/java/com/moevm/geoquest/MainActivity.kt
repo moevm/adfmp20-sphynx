@@ -14,7 +14,7 @@ open class FragmentUpdateUI: Fragment(){
 
 class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener, MapFragment.MapActionListener{
 
-    lateinit var auth: FirebaseAuth
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     lateinit var bottomView: BottomNavigationView
     private val fragments = mutableMapOf<Int, FragmentUpdateUI>()
 
@@ -35,7 +35,6 @@ class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener, M
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        auth = FirebaseAuth.getInstance()
         if (auth.currentUser == null)
             startActivity(Intent(this, LoginActivity::class.java))
         bottomView = findViewById(R.id.bottom_navigation)

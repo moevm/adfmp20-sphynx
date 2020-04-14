@@ -368,13 +368,25 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                 .document(userId)
                 .collection("Quests")
                 .document(mQuestId.toString())
-                .set(mapOf("status" to QuestStatus.Completed))
+                .set( mapOf("status" to QuestStatus.Completed) )
                 .addOnSuccessListener {
                     Log.d("Sending_data", "success change to completed")
                 }
                 .addOnFailureListener {
                     Log.d("Sending_data", "failure add")
                     //TODO: No internet connection
+                }
+            db.collection("Quests")
+                .document(mQuestId.toString())
+                .collection("Records")
+                .document(userId)
+                .set( mapOf("Time" to timerValue) )
+                .addOnSuccessListener {
+                    mQuestId = -1
+                    Log.d("QuestResults", "array updated")
+                }
+                .addOnFailureListener{
+                    Log.d("QuestResults", "array wasn't updated")
                 }
             db.collection("Users")
                 .document(userId)
@@ -420,6 +432,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                                         "Time" to timerValue,
                                         "Distance" to questProgress.getTravelledDistance()
                                     )
+
                                 )
                             )
                             .addOnSuccessListener {
@@ -434,7 +447,6 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                     Log.d("quest_action", "user stat fail")
                     //TODO: No internet connection
                 }
-            mQuestId = -1
         }
         Log.d("TimerTag", "timer cancel")
         view?.findViewById<TextView>(R.id.points_statistics)

@@ -1,7 +1,6 @@
 package com.moevm.geoquest
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,8 +10,6 @@ import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.ListView
 import android.widget.TextView
-import androidx.annotation.RequiresApi
-import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -77,8 +74,8 @@ class ProfileFragment : FragmentUpdateUI() {
                     .collection("Quests")
                     .whereEqualTo("status", QuestStatus.Completed)
                     .get()
-                    .addOnSuccessListener { user_quests ->
-                        val toViewObjectsIds = user_quests.documents.map { it.id }
+                    .addOnSuccessListener { completed_quests ->
+                        val toViewObjectsIds = completed_quests.documents.map { it.id }
                         val toView = quests_list.filter { it.id in toViewObjectsIds }
                         val arr = Array(toView.size){
                             val toViewObj = toView[it]
@@ -121,7 +118,9 @@ class ProfileFragment : FragmentUpdateUI() {
         fillCompletedQuest()
 
         mListView.setOnItemClickListener { parent, view, position, id ->
-            startActivity(Intent(context, RecordsActivity::class.java))
+            val questRecords = Intent(context, RecordsActivity::class.java)
+            questRecords.putExtra("questId", mCompletedQuests[position].id)
+            startActivity(questRecords)
         }
 
         exitButton.setOnClickListener {
