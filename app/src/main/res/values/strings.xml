@@ -37,5 +37,6 @@
     <string name="profile_quests_total">Пройдено квестов: %1$d</string>
     <string name="profile_spent_time">Потраченное время: %1$d</string>
     <string name="profile_points_discovered">Всего точек открыто: %1$d</string>
+    <string name="records_subtitle">%1$d пользователей прошло квест</string>
 
 </resources>

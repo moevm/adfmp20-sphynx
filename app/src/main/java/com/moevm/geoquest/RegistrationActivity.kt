@@ -9,6 +9,7 @@ import android.widget.Toast
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.UserProfileChangeRequest
 
 class RegistrationActivity : AppCompatActivity() {
 
@@ -34,6 +35,10 @@ class RegistrationActivity : AppCompatActivity() {
                         if (task.isSuccessful) {
                             // Sign in success, update UI with the signed-in user's information
                             val user = auth.currentUser
+                            val update = UserProfileChangeRequest.Builder()
+                                .setDisplayName(email.split("@")[0])
+                                .build()
+                            user?.updateProfile(update)
                             Log.d("AUTHORIZATION", "createUserWithEmail:success, user: $user")
                             updateUI(user)
                         } else {

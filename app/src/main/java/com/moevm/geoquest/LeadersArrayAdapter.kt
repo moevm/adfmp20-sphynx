@@ -11,7 +11,7 @@ import com.moevm.geoquest.models.LeaderModel
 class LeadersArrayAdapter(
     context: Context,
     resource: Int,
-    private val leaders: Array<LeaderModel>
+    private val leaders: MutableList<LeaderModel>
 ) :
     ArrayAdapter<LeaderModel>(context, resource, leaders) {
 

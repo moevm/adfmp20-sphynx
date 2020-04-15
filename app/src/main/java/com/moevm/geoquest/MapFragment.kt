@@ -614,9 +614,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                 }
                 if (!this::gmap.isInitialized) {
                     getLastLocation()
-                    Log.d("currentLocation", "draw called")
                     initMapAsync()
-                    Log.d("currentLocation", "get location called")
                 }
             }
         }

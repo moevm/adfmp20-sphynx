@@ -40,7 +40,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/default_margin"
         android:layout_marginTop="@dimen/small_margin"
-        android:text="6743 пользователей прошло квест"
         android:textColor="#88000000"
         android:textSize="@dimen/subtitle_text" />
 
