@@ -12,7 +12,7 @@ open class FragmentUpdateUI: Fragment(){
     open fun updateUI(){}
 }
 
-class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener, MapFragment.MapActionListener{
+class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     lateinit var bottomView: BottomNavigationView
@@ -63,20 +63,12 @@ class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener, M
     }
 
     override fun onQuestGiveUp() {
-        Log.d("Sending_data", "onQuestGiveUp")
         (fragments[R.id.bottom_navigation_map] as MapFragment).questGiveUp()
-    }
-
-    override fun onQuestCompleted() {
-        Log.d("Sending_data", "quest completed")
     }
 
     override fun onAttachFragment(fragment: Fragment) {
         if (fragment is QuestsFragment) {
             fragment.setOnQuestsActionListener(this)
-        }
-        else if(fragment is MapFragment){
-            fragment.setOnMapActionListener(this)
         }
     }
 

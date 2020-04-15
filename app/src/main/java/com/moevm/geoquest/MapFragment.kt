@@ -172,10 +172,6 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     private var questFoundedAttractionsCount: Int = 0
     private var questProgress: QuestProgress = QuestProgress()
 
-    private lateinit var callback: MapActionListener
-    interface MapActionListener {
-        fun onQuestCompleted()
-    }
 
     fun startQuest(questId: Int){
         Log.d("Sending_data", "start quest")
@@ -187,10 +183,6 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
         foundedQuestsPoints = mutableListOf()
         mQuestId = questId
         fillQuestInfo(questId)
-    }
-
-    fun setOnMapActionListener(callback: MapActionListener) {
-        this.callback = callback
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -363,6 +355,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
 
     private fun questCompleted() {
         Log.d("quest_action", "Quest Completed!!, questId: $mQuestId")
+
         if (mQuestId >= 0) {
             db.collection("Users")
                 .document(userId)
@@ -415,7 +408,6 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                                 timer.cancel()
                                 timer = Timer()
                                 timerValue = -1
-                                callback.onQuestCompleted()
                                 Log.d("quest_action", "update statistic successful")
                             }
                             .addOnFailureListener {
@@ -449,6 +441,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                 }
         }
         Log.d("TimerTag", "timer cancel")
+        view?.findViewById<ImageButton>(R.id.area_button)?.visibility = View.GONE
         view?.findViewById<TextView>(R.id.points_statistics)
             ?.text = getString(R.string.quest_progress_points, questAttractionsCount, questAttractionsCount)
     }
@@ -456,7 +449,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     private fun updateCardsInfoProgress(distanceCardText:String,
                                         distanceCardColor: String,
                                         needFoundedCountUpdate: Boolean=false) {
-//        Log.d("Sending_data", "update card info")
+        view?.findViewById<ImageButton>(R.id.area_button)?.visibility = View.VISIBLE
         view?.findViewById<CardView>(R.id.statistics)?.visibility = View.VISIBLE
         view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.VISIBLE
         view?.findViewById<CardView>(R.id.distance_card_view)
@@ -542,12 +535,16 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
         timer = Timer()
         timerValue = -1
         questProgress = QuestProgress()
+        drawableQuestArea?.remove()
+        drawableQuestArea = null
+        questArea = null
         if(foundedQuestsPoints != null){
             foundedQuestsPoints?.forEach {
                 it.remove()
             }
             foundedQuestsPoints = null
         }
+        view?.findViewById<ImageButton>(R.id.area_button)?.visibility = View.GONE
         view?.findViewById<CardView>(R.id.distance_card_view)?.visibility = View.GONE
         view?.findViewById<CardView>(R.id.statistics)?.visibility = View.GONE
     }
