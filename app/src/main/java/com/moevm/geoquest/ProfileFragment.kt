@@ -42,11 +42,20 @@ class ProfileFragment : FragmentUpdateUI() {
                 .document(userId)
                 .get()
                 .addOnSuccessListener {
-                    val data = it.data?.getValue("Statistic") as Map<String, *>?
-                    val points = data?.getValue("Points").toString().toLong()
-                    val quests = data?.getValue("Quests").toString().toLong()
-                    val time = data?.getValue("Time").toString().toLong()
-                    val distance = data?.getValue("Distance").toString().toDouble() / 1000
+                    val mapKeys = it.data?.keys
+                    var points = 0L
+                    var quests = 0L
+                    var time = 0L
+                    var distance = 0.0
+
+                    if (mapKeys?.contains("Statistic") == true) {
+                        Log.d("QuestResults", "Statistic exist")
+                        val data = it.data?.getValue("Statistic") as Map<String, *>
+                        points = data.getValue("Points").toString().toLong()
+                        quests = data.getValue("Quests").toString().toLong()
+                        time = data.getValue("Time").toString().toLong()
+                        distance = data.getValue("Distance").toString().toDouble() / 1000
+                    }
                     view?.findViewById<TextView>(R.id.walked_total)
                         ?.text = getString(R.string.profile_walked_total, distance)
                     view?.findViewById<TextView>(R.id.quests_total)
