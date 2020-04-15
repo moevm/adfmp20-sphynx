@@ -343,8 +343,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                 timerValue += 1
                 mHandler.obtainMessage(1).sendToTarget()
             }
-        }, 0, 10_000)
-        // TODO : timer period to 60_000
+        }, 0, 60_000)
     }
 
     var mHandler: Handler = object : Handler() {
