@@ -36,9 +36,10 @@ class RecordsActivity : AppCompatActivity() {
 
 //        TODO loading progress bar
 //        TODO set cloud function on update completed count and get that value
-
+        val questId = intent.extras?.get("questId").toString()
+        Log.d("username", currentUser?.displayName.toString())
         db.collection("Quests")
-            .document("0")
+            .document(questId)
             .collection("Records")
             .orderBy("Time")
             .get()
