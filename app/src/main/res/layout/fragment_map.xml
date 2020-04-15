@@ -55,7 +55,6 @@
                 android:layout_marginVertical="@dimen/small_margin"
                 android:layout_marginHorizontal="@dimen/small_margin"
                 android:gravity="center"
-                android:text="0 мин."
                 android:textColor="@color/black"
                 android:textSize="14sp" />
             <TextView

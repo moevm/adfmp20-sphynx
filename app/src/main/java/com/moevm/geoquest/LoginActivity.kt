@@ -39,20 +39,14 @@ class LoginActivity : AppCompatActivity() {
                     getSystemService(Context.ACCOUNT_SERVICE) as AccountManager
                 val list = manager.accounts
                 if(list.isNotEmpty()){
-                    Log.d("AUTHORIZATION", "names:")
-                    list.forEach {
-                        Log.d("AUTHORIZATION", "name: ${it.name}, type: ${it.type}")
-                    }
                     val update = UserProfileChangeRequest.Builder()
                         .setDisplayName(list[0].name.split("@")[0])
                         .build()
                     user?.updateProfile(update)
                 }
-                Log.d("AUTHORIZATION", "user: $user")
                 updateUI(user)
                 // ...
             } else {
-                Log.d("AUTHORIZATION", "Fail auth")
                 updateUI(null)
                 // Sign in failed. If response is null the user canceled the
                 // sign-in flow using the back button. Otherwise check

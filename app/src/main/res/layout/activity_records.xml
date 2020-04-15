@@ -33,6 +33,10 @@
             android:textStyle="bold" />
     </LinearLayout>
 
+    <include
+        layout="@layout/leader_list_item"
+        android:id="@+id/userResult"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/subtitle"

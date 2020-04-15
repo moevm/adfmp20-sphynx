@@ -152,7 +152,8 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     }
 
     private val db = Firebase.firestore
-    private val userId = FirebaseAuth.getInstance().currentUser!!.uid
+    private val user = FirebaseAuth.getInstance().currentUser!!
+    private val userId = user.uid
 
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var gmap: GoogleMap
@@ -348,14 +349,11 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
 
     var mHandler: Handler = object : Handler() {
         override fun handleMessage(msg: Message?) {
-            Log.d("TimerTag", "timer: $timerValue")
             view?.findViewById<TextView>(R.id.time_statistics)?.text = getString(R.string.quest_progress_time, timerValue)
         }
     }
 
     private fun questCompleted() {
-        Log.d("quest_action", "Quest Completed!!, questId: $mQuestId")
-
         if (mQuestId >= 0) {
             db.collection("Users")
                 .document(userId)
@@ -363,23 +361,26 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                 .document(mQuestId.toString())
                 .set( mapOf("status" to QuestStatus.Completed) )
                 .addOnSuccessListener {
-                    Log.d("Sending_data", "success change to completed")
+                    Log.d("questProgress", "Completed. user: $userId, quest: $mQuestId")
                 }
                 .addOnFailureListener {
-                    Log.d("Sending_data", "failure add")
+                    Log.d("questProgress", "Fail to save complete status. user: $userId, quest: $mQuestId")
                     //TODO: No internet connection
                 }
             db.collection("Quests")
                 .document(mQuestId.toString())
                 .collection("Records")
                 .document(userId)
-                .set( mapOf("Time" to timerValue) )
+                .set( mapOf(
+                    "Time" to timerValue,
+                    "Username" to user.displayName
+                ) )
                 .addOnSuccessListener {
                     mQuestId = -1
-                    Log.d("QuestResults", "array updated")
+                    Log.d("questProgress", "Completed. Saved results to DB: success")
                 }
                 .addOnFailureListener{
-                    Log.d("QuestResults", "array wasn't updated")
+                    Log.d("questProgress", "Completed. Saved results to DB: fail")
                 }
             db.collection("Users")
                 .document(userId)

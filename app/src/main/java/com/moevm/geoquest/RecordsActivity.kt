@@ -3,15 +3,21 @@ package com.moevm.geoquest
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ImageButton
 import android.widget.ListView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.moevm.geoquest.models.LeaderModel
 
 class RecordsActivity : AppCompatActivity() {
+
+    companion object {
+        const val recordsToView = 10
+    }
 
     private val mLeaders: MutableList<LeaderModel> = mutableListOf()
     private val db = Firebase.firestore
@@ -41,20 +47,31 @@ class RecordsActivity : AppCompatActivity() {
                 findViewById<TextView>(R.id.subtitle)
                     ?.text = getString(R.string.records_subtitle, result.documents.size)
                 val docs = result.documents
-                val leaders = docs.take(10)
-                Log.d("QuestResults","current user display name: ${currentUser?.displayName}")
-//                val userPosition = docs.indexOfFirst {
-//                    it.id == currentUser!!.uid
-//                }
+
+                val userPosition = result.documents.indexOfFirst {
+                    it.id == currentUser?.uid
+                }
+                if (userPosition >= recordsToView) {
+                    val userData = result.documents[userPosition].data
+                    val time = userData?.getValue("Time").toString().toInt()
+                    findViewById<ConstraintLayout>(R.id.userResult)?.visibility = View.VISIBLE
+                    findViewById<TextView>(R.id.place)?.text = (userPosition+1).toString()
+                    findViewById<TextView>(R.id.name)?.text = "Вы"
+                    findViewById<TextView>(R.id.time)?.text = getString(R.string.quest_progress_time, time)
+                }
+
+                val leaders = docs.take(recordsToView)
                 result.documents.forEach{
-                    Log.d("QuestResults", "${it.id}: ${it.data}")
                     val time = it.data?.getValue("Time").toString().toInt()
-                    val userName = if (currentUser!!.uid == it.id) "Вы" else "Не вы"
+                    val usernameDb = if ("Username" in it.data!!.keys)
+                        it.data?.getValue("Username").toString()
+                    else ""
+                    val userName = if (currentUser!!.uid == it.id) "Вы" else usernameDb
                     mLeaders.add(
                         LeaderModel(
                             userName,
                             mLeaders.size+1,
-                            "$time мин."
+                            getString(R.string.quest_progress_time, time)
                         )
                     )
                     if(leaders.size == mLeaders.size){
