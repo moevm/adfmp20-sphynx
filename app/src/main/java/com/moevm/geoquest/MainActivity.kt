@@ -35,8 +35,10 @@ class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener, M
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (auth.currentUser == null)
+        if (auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
+            return
+        }
         bottomView = findViewById(R.id.bottom_navigation)
 
         fragments[R.id.bottom_navigation_quests] = QuestsFragment()
