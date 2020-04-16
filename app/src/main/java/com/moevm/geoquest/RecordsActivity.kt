@@ -13,6 +13,15 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.moevm.geoquest.models.LeaderModel
 
+fun timeToHoursMinutes(time: Int): String {
+    Log.d("questProgress", "time: %.1f ч.".format(time.toFloat()/60))
+    return if (time < 60)
+        "$time мин."
+    else {
+        "%.1f ч.".format(time.toFloat()/60)
+    }
+}
+
 class RecordsActivity : AppCompatActivity() {
 
     companion object {
@@ -22,7 +31,6 @@ class RecordsActivity : AppCompatActivity() {
     private val mLeaders: MutableList<LeaderModel> = mutableListOf()
     private val db = Firebase.firestore
     private val currentUser = FirebaseAuth.getInstance().currentUser
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +66,7 @@ class RecordsActivity : AppCompatActivity() {
                     findViewById<ConstraintLayout>(R.id.userResult)?.visibility = View.VISIBLE
                     findViewById<TextView>(R.id.place)?.text = (userPosition+1).toString()
                     findViewById<TextView>(R.id.name)?.text = "Вы"
-                    findViewById<TextView>(R.id.time)?.text = getString(R.string.quest_progress_time, time)
+                    findViewById<TextView>(R.id.time)?.text = timeToHoursMinutes(time)
                 }
 
                 val leaders = docs.take(recordsToView)
@@ -72,7 +80,7 @@ class RecordsActivity : AppCompatActivity() {
                         LeaderModel(
                             userName,
                             mLeaders.size+1,
-                            getString(R.string.quest_progress_time, time)
+                            timeToHoursMinutes(time)
                         )
                     )
                     if(leaders.size == mLeaders.size){

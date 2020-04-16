@@ -16,7 +16,6 @@ import com.google.firebase.ktx.Firebase
 import com.moevm.geoquest.models.QuestModel
 import com.moevm.geoquest.models.QuestStatus
 
-
 class ProfileFragment : FragmentUpdateUI() {
     private val db = Firebase.firestore
     private val userId = FirebaseAuth.getInstance().currentUser?.uid
@@ -61,7 +60,7 @@ class ProfileFragment : FragmentUpdateUI() {
                     view?.findViewById<TextView>(R.id.quests_total)
                         ?.text = getString(R.string.profile_quests_total, quests)
                     view?.findViewById<TextView>(R.id.spent_time)
-                        ?.text = getString(R.string.profile_spent_time, time)
+                        ?.text = getString(R.string.profile_spent_time, timeToHoursMinutes(time.toInt()))
                     view?.findViewById<TextView>(R.id.points_discovered)
                         ?.text = getString(R.string.profile_points_discovered, points)
                 }
