@@ -20,7 +20,7 @@ class QuestProgressUnitTest {
     }
     
     @Test
-    fun emptyQuestProgress(){
+    fun testEmptyQuestProgress(){
         progress = QuestProgress()
         assertEquals(progress.getQuestAttractionStartCount(), 0)
         assertEquals(progress.getLastFounded(), null)
@@ -29,7 +29,7 @@ class QuestProgressUnitTest {
     }
 
     @Test
-    fun testQuestProgress(){
+    fun test_setupQuest(){
         progress.setupQuest(MutableList<AttractionModel>(1) { _ -> AttractionModel(nm= "Point", coord= LatLng(50.0, 60.0), trig=0.5f) })
         assertEquals(progress.getQuestAttractionStartCount(), 1)
         assertEquals(progress.getLastFounded(), null)
