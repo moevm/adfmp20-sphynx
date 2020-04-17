@@ -28,5 +28,13 @@ class QuestProgressTest {
         assertEquals(progress.checkDistanceToObject(Location(LocationManager.GPS_PROVIDER)),  AttractionStatus.Nothing)
     }
 
+    @Test
+    fun testQuestProject(){
+        progress.setupQuest(MutableList<AttractionModel>(1) { _ -> AttractionModel(nm= "Point", coord= LatLng(50.0, 60.0), trig=0.5f) })
+        assertEquals(progress.getQuestAttractionStartCount(), 1)
+        assertEquals(progress.getLastFounded(), null)
+        assertEquals(progress.getTravelledDistance(), 0.0, 0.001)
+    }
+
 }
 
