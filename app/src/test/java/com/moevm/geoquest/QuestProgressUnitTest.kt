@@ -10,7 +10,7 @@ import org.junit.Before
 import org.junit.Test
 
 
-class QuestProgressTest {
+class QuestProgressUnitTest {
 
     lateinit var progress: QuestProgress
 

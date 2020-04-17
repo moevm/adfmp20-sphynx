@@ -4,7 +4,7 @@ import com.moevm.geoquest.RecordsActivity
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class RecordTest {
+class RecordActivityUnitTest {
 
     @Test
     fun test_timeToHoursMinutes() {
