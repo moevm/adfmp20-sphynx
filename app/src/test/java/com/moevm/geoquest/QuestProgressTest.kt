@@ -34,6 +34,7 @@ class QuestProgressTest {
         assertEquals(progress.getQuestAttractionStartCount(), 1)
         assertEquals(progress.getLastFounded(), null)
         assertEquals(progress.getTravelledDistance(), 0.0, 0.001)
+        assertEquals(progress.checkDistanceToObject(Location(LocationManager.GPS_PROVIDER)),  AttractionStatus.Warmer)
     }
 
 }
