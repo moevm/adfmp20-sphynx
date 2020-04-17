@@ -14,7 +14,7 @@ import com.google.firebase.ktx.Firebase
 import com.moevm.geoquest.models.LeaderModel
 
 fun timeToHoursMinutes(time: Int): String {
-    Log.d("questProgress", "time: %.1f ч.".format(time.toFloat()/60))
+    //Log.d("questProgress", "time: %.1f ч.".format(time.toFloat()/60))
     return if (time < 60)
         "$time мин."
     else {

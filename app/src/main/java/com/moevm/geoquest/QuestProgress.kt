@@ -46,7 +46,7 @@ class QuestProgress/*() : Parcelable*/ {
         this.questSelected = true
         this.questAttractions = qa
         this.questAttractionStartCount = qa.size
-        Log.d("Sending_data", "attractions object: ${this.questAttractions}")
+        //Log.d("Sending_data", "attractions object: ${this.questAttractions}")
     }
 
     fun checkDistanceToObject(userLocation: Location): AttractionStatus {
