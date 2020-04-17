@@ -97,4 +97,26 @@ class QuestProgressInstrumentedTest {
         assertEquals(progress.checkDistanceToObject(location), AttractionStatus.QuestCompleted)
         assertEquals(progress.checkDistanceToObject(location), AttractionStatus.Nothing)
     }
+
+
+    @Test
+    fun test_UnchangeableDistanceWithoutQuest(){
+        var location = Location(LocationManager.GPS_PROVIDER)
+        location.latitude = 55.0
+        location.longitude = 65.0
+        assertEquals(progress.checkDistanceToObject(location),  AttractionStatus.Nothing)
+        assertEquals(progress.getTravelledDistance(), 0.0, 0.001)
+
+        location = Location(LocationManager.GPS_PROVIDER)
+        location.latitude = 50.0
+        location.longitude = 60.0
+        assertEquals(progress.checkDistanceToObject(location),  AttractionStatus.Nothing)
+        assertEquals(progress.getTravelledDistance(), 0.0, 0.001)
+
+        location = Location(LocationManager.GPS_PROVIDER)
+        location.latitude = 45.0
+        location.longitude = 55.0
+        assertEquals(progress.checkDistanceToObject(location),  AttractionStatus.Nothing)
+        assertEquals(progress.getTravelledDistance(), 0.0, 0.001)
+    }
 }
