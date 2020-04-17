@@ -5,6 +5,7 @@ import android.location.LocationManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.android.gms.maps.model.LatLng
 import com.moevm.geoquest.models.AttractionModel
+import com.moevm.geoquest.models.AttractionStatus
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -61,6 +62,26 @@ class QuestProgressInstrumentedTest {
         assertEquals(progress.getLastFounded(), null)
         progress.checkDistanceToObject(location)    // 4 - founded
         assertEquals(progress.getLastFounded(), AttractionModel(nm= "Point", coord= LatLng(50.0, 60.0), trig=0.5f))
+    }
+
+
+    @Test
+    fun test_checkDistanceToObject(){
+        progress.setupQuest(MutableList<AttractionModel>(1) { _ -> AttractionModel(nm= "Point", coord= LatLng(50.0, 60.0), trig=0.5f) })
+        var location = Location(LocationManager.GPS_PROVIDER)
+        location.latitude = 50.0
+        location.longitude = 65.0
+        assertEquals(progress.checkDistanceToObject(location), AttractionStatus.Warmer)
+
+        location = Location(LocationManager.GPS_PROVIDER)
+        location.latitude = 55.0
+        location.longitude = 65.0
+        assertEquals(progress.checkDistanceToObject(location), AttractionStatus.Colder)
+
+        location = Location(LocationManager.GPS_PROVIDER)
+        location.latitude = 50.0
+        location.longitude = 60.0
+        assertEquals(progress.checkDistanceToObject(location), AttractionStatus.Success)
     }
 
 }
