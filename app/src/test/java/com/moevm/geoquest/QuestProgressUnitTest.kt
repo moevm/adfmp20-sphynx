@@ -36,5 +36,15 @@ class QuestProgressUnitTest {
         assertEquals(progress.getTravelledDistance(), 0.0, 0.001)
     }
 
+    @Test
+    fun test_getQuestAttractionStartCount(){
+        progress.setupQuest(MutableList<AttractionModel>(1) { _ -> AttractionModel(nm= "Point", coord= LatLng(50.0, 60.0), trig=0.5f) })
+        assertEquals(progress.getQuestAttractionStartCount(), 1)
+        progress.setupQuest(MutableList<AttractionModel>(5) { i -> AttractionModel(nm= "Point", coord= LatLng(50.0, 60.0+i/10), trig=0.5f) })
+        assertEquals(progress.getQuestAttractionStartCount(), 5)
+        progress.setupQuest(mutableListOf<AttractionModel>())
+        assertEquals(progress.getQuestAttractionStartCount(), 0)
+    }
+
 }
 
