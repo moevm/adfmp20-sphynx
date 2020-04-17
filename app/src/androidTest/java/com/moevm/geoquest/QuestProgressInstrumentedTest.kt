@@ -84,4 +84,17 @@ class QuestProgressInstrumentedTest {
         assertEquals(progress.checkDistanceToObject(location), AttractionStatus.Success)
     }
 
+    
+    @Test
+    fun test_QuestCompleted(){
+        progress.setupQuest(MutableList<AttractionModel>(1) { _ -> AttractionModel(nm= "Point", coord= LatLng(50.0, 60.0), trig=0.5f) })
+        val location = Location(LocationManager.GPS_PROVIDER)
+        location.latitude = 50.0
+        location.longitude = 60.0
+        progress.checkDistanceToObject(location)
+        progress.checkDistanceToObject(location)
+        progress.checkDistanceToObject(location)
+        assertEquals(progress.checkDistanceToObject(location), AttractionStatus.QuestCompleted)
+        assertEquals(progress.checkDistanceToObject(location), AttractionStatus.Nothing)
+    }
 }
