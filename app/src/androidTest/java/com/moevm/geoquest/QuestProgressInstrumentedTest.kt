@@ -44,4 +44,23 @@ class QuestProgressInstrumentedTest {
         assertEquals(progress.getTravelledDistance(), 914795.25, 0.01)
     }
 
+
+    @Test
+    fun test_getLastFounded(){
+        progress.setupQuest(MutableList<AttractionModel>(1) { _ -> AttractionModel(nm= "Point", coord= LatLng(50.0, 60.0), trig=0.5f) })
+        val location = Location(LocationManager.GPS_PROVIDER)
+        location.latitude = 50.0
+        location.longitude = 60.0
+        // we need 4 times to 'find' attraction
+        assertEquals(progress.getLastFounded(), null)
+        progress.checkDistanceToObject(location)    // 1 - not founded
+        assertEquals(progress.getLastFounded(), null)
+        progress.checkDistanceToObject(location)    // 2 - not founded
+        assertEquals(progress.getLastFounded(), null)
+        progress.checkDistanceToObject(location)    // 3 - not founded
+        assertEquals(progress.getLastFounded(), null)
+        progress.checkDistanceToObject(location)    // 4 - founded
+        assertEquals(progress.getLastFounded(), AttractionModel(nm= "Point", coord= LatLng(50.0, 60.0), trig=0.5f))
+    }
+
 }
