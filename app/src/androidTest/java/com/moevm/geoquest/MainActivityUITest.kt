@@ -61,4 +61,16 @@ class MainActivityUITest {
             .check(matches(isDisplayed()))
     }
 
+
+    @Test
+    fun test_MapFragmentElements() {
+        onView(withId(R.id.bottom_navigation))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.bottom_navigation_map))
+            .check(matches(isDisplayed()))
+            .perform(click())   // go to MainActivity.MapFragment
+        // check it
+        onView(withId(R.id.mapFragment))
+            .check(matches(isDisplayed()))
+    }
 }
