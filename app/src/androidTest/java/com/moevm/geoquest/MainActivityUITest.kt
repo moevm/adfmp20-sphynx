@@ -73,4 +73,22 @@ class MainActivityUITest {
         onView(withId(R.id.mapFragment))
             .check(matches(isDisplayed()))
     }
+
+
+    @Test
+    fun test_ProfileFragmentElements() {
+        onView(withId(R.id.bottom_navigation))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.bottom_navigation_profile))
+            .check(matches(isDisplayed()))
+            .perform(click())   // go to MainActivity.ProfileFragment
+        // check it
+        onView(withId(R.id.profile_title))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.completed_quests_title))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.exit_button))
+            .check(matches(isDisplayed()))
+    }
+
 }
