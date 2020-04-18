@@ -92,25 +92,27 @@ class MapFragment(private val userId: String?, private val userName: String) : F
     }
 
     private fun checkCurrentQuestAlreadySelected(){
-        db.collection("Users")
-            .document(userId!!)
-            .collection("Quests")
-            .whereEqualTo("status", QuestStatus.InProgress)
-            .get()
-            .addOnSuccessListener { current_user_quest ->
-                val currentQuest = current_user_quest.documents
-                if (currentQuest.size == 1) {
-                    db.collection("Quests").document(currentQuest[0].id).get()
-                        .addOnSuccessListener {
-                            val questId = it?.id?.toIntOrNull()
-                            if(questId != null)
-                            startQuest(questId)
-                        }
-                        .addOnFailureListener {
-                            // TODO: Sorry fail to load
-                        }
+        if (userId != null) {
+            db.collection("Users")
+                .document(userId)
+                .collection("Quests")
+                .whereEqualTo("status", QuestStatus.InProgress)
+                .get()
+                .addOnSuccessListener { current_user_quest ->
+                    val currentQuest = current_user_quest.documents
+                    if (currentQuest.size == 1) {
+                        db.collection("Quests").document(currentQuest[0].id).get()
+                            .addOnSuccessListener {
+                                val questId = it?.id?.toIntOrNull()
+                                if (questId != null)
+                                    startQuest(questId)
+                            }
+                            .addOnFailureListener {
+                                // TODO: Sorry fail to load
+                            }
+                    }
                 }
-            }
+        }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -120,12 +122,14 @@ class MapFragment(private val userId: String?, private val userName: String) : F
         view?.findViewById<ImageButton>(R.id.area_button)
             ?.setOnClickListener(onShowQuestAreaListener)
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
-        mLocationPermissionGranted = checkLocationPermission()
-        if (mLocationPermissionGranted) {
-            getLastLocation()
-            initMapAsync()
-        } else {
-            requestLocationPermission()
+        if (userId != null) {
+            mLocationPermissionGranted = checkLocationPermission()
+            if (mLocationPermissionGranted) {
+                getLastLocation()
+                initMapAsync()
+            } else {
+                requestLocationPermission()
+            }
         }
     }
 
