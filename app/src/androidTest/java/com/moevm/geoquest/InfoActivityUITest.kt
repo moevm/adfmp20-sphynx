@@ -21,4 +21,11 @@ class InfoActivityUITest {
             .check(matches(withText("Как играть?")))
     }
 
+
+    @Test
+    fun test_InfoIsDisplayed() {
+        onView(withId(R.id.text_info))
+            .check(matches(isDisplayed()))
+    }
+
 }
