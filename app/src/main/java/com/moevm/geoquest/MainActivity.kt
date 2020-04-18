@@ -15,7 +15,6 @@ open class FragmentUpdateUI: Fragment(){
 class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private var testMode: Boolean = false
     lateinit var bottomView: BottomNavigationView
     private val fragments = mutableMapOf<Int, FragmentUpdateUI>()
 
@@ -36,15 +35,24 @@ class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (auth.currentUser == null) {
-            startActivity(Intent(this, LoginActivity::class.java))
-            return
+        if (System.getenv("test_mode") == "true")
+        {
+            if (auth.currentUser == null) {
+                startActivity(Intent(this, LoginActivity::class.java))
+                return
+            }
+            fragments[R.id.bottom_navigation_quests] = QuestsFragment(auth.currentUser?.uid)
+            fragments[R.id.bottom_navigation_map] =
+                MapFragment(auth.currentUser?.uid, auth.currentUser?.displayName ?: "")
+            fragments[R.id.bottom_navigation_profile] = ProfileFragment(auth.currentUser?.uid)
         }
-        bottomView = findViewById(R.id.bottom_navigation)
-
-        fragments[R.id.bottom_navigation_quests] = QuestsFragment(auth.currentUser?.uid)
-        fragments[R.id.bottom_navigation_map] = MapFragment(auth.currentUser?.uid, auth.currentUser?.displayName ?: "")
-        fragments[R.id.bottom_navigation_profile] = ProfileFragment(auth.currentUser?.uid)
+        else
+        {
+            fragments[R.id.bottom_navigation_quests] = QuestsFragment(null)
+            fragments[R.id.bottom_navigation_map] =
+                MapFragment(null, "Tester")
+            fragments[R.id.bottom_navigation_profile] = ProfileFragment(null)
+        }
 
         fragments.forEach {
             supportFragmentManager.beginTransaction()
@@ -53,7 +61,7 @@ class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener {
 
         supportFragmentManager.beginTransaction().show(fragments[R.id.bottom_navigation_quests]!!)
             .commit()
-
+        bottomView = findViewById(R.id.bottom_navigation)
         bottomView.setOnNavigationItemSelectedListener(navigationSelectionListener)
     }
 
@@ -72,9 +80,4 @@ class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener {
             fragment.setOnQuestsActionListener(this)
         }
     }
-
-    fun set_test_mode(flag: Boolean){
-        this.testMode = flag
-    }
-
 }
