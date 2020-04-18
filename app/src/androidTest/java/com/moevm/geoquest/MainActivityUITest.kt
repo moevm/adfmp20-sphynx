@@ -91,4 +91,28 @@ class MainActivityUITest {
             .check(matches(isDisplayed()))
     }
 
+
+    @Test
+    fun test_InfoFromQuestList() {
+        onView(withId(R.id.bottom_navigation))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.bottom_navigation_quests))
+            .check(matches(isDisplayed()))
+            .perform(click())   // go to MainActivity.QuestFragment
+        onView(withId(R.id.info_button))
+            .check(matches(isDisplayed()))
+            .perform(click())   // go to InfoActivity
+        // check it
+        onView(withId(R.id.title))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.text_info))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.back_button))
+            .check(matches(isDisplayed()))
+            .perform(click())   // return to MainActivity.QuestFragment
+        // check MainActivity.QuestFragment
+        onView(withId(R.id.quest_list_title))
+            .check(matches(isDisplayed()))
+    }
+
 }
