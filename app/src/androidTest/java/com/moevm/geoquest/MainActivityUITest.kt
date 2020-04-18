@@ -115,4 +115,23 @@ class MainActivityUITest {
             .check(matches(isDisplayed()))
     }
 
+
+    @Test
+    fun test_Logout() {
+        onView(withId(R.id.bottom_navigation))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.bottom_navigation_profile))
+            .check(matches(isDisplayed()))
+            .perform(click())   // go to MainActivity.ProfileFragment
+        // check it
+        onView(withId(R.id.profile_title))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.exit_button))
+            .check(matches(isDisplayed()))
+            .perform(click())   // go to return to LoginActivity
+        // check LoginActivity
+        onView(withId(R.id.login_title))
+            .check(matches(isDisplayed()))
+    }
+
 }
