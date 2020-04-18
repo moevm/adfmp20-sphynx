@@ -15,6 +15,7 @@ open class FragmentUpdateUI: Fragment(){
 class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private var testMode: Boolean = false
     lateinit var bottomView: BottomNavigationView
     private val fragments = mutableMapOf<Int, FragmentUpdateUI>()
 
@@ -41,9 +42,9 @@ class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener {
         }
         bottomView = findViewById(R.id.bottom_navigation)
 
-        fragments[R.id.bottom_navigation_quests] = QuestsFragment()
-        fragments[R.id.bottom_navigation_map] = MapFragment()
-        fragments[R.id.bottom_navigation_profile] = ProfileFragment()
+        fragments[R.id.bottom_navigation_quests] = QuestsFragment(auth.currentUser?.uid)
+        fragments[R.id.bottom_navigation_map] = MapFragment(auth.currentUser?.uid, auth.currentUser?.displayName ?: "")
+        fragments[R.id.bottom_navigation_profile] = ProfileFragment(auth.currentUser?.uid)
 
         fragments.forEach {
             supportFragmentManager.beginTransaction()
@@ -70,6 +71,10 @@ class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener {
         if (fragment is QuestsFragment) {
             fragment.setOnQuestsActionListener(this)
         }
+    }
+
+    fun set_test_mode(flag: Boolean){
+        this.testMode = flag
     }
 
 }

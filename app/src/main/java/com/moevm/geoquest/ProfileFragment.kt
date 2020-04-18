@@ -16,9 +16,8 @@ import com.google.firebase.ktx.Firebase
 import com.moevm.geoquest.models.QuestModel
 import com.moevm.geoquest.models.QuestStatus
 
-class ProfileFragment : FragmentUpdateUI() {
+class ProfileFragment(private val userId: String?) : FragmentUpdateUI() {
     private val db = Firebase.firestore
-    private val userId = FirebaseAuth.getInstance().currentUser?.uid
     private lateinit var mListView: ListView
     private lateinit var mCompletedQuests: ArrayList<QuestModel>
     private lateinit var mQuestsArrayAdapter: ArrayAdapter<QuestModel>

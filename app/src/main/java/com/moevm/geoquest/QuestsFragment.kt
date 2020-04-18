@@ -18,9 +18,8 @@ import com.moevm.geoquest.models.QuestStatus
 import com.squareup.picasso.Picasso
 
 
-class QuestsFragment : FragmentUpdateUI() {
+class QuestsFragment(private val userId: String?) : FragmentUpdateUI() {
     private val db = Firebase.firestore
-    private val userId = FirebaseAuth.getInstance().currentUser?.uid
     private lateinit var callback: QuestsActionListener
     private lateinit var mListView: ListView
     private var mIsQuestSelected: Boolean = false
