@@ -1,6 +1,7 @@
 package com.moevm.geoquest
 
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -42,6 +43,21 @@ class MainActivityUITest {
         onView(withId(R.id.bottom_navigation_profile))
             .check(matches(isDisplayed()))
         onView(withId(R.id.fragment_container))
+            .check(matches(isDisplayed()))
+    }
+
+
+    @Test
+    fun test_QuestsFragmentElements() {
+        onView(withId(R.id.bottom_navigation))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.bottom_navigation_quests))
+            .check(matches(isDisplayed()))
+            .perform(click())   // go to MainActivity.QuestFragment
+        // check it
+        onView(withId(R.id.quest_list_title))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.info_button))
             .check(matches(isDisplayed()))
     }
 
