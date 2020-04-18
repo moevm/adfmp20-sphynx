@@ -15,6 +15,38 @@
       },
       "oauth_client": [
         {
+          "client_id": "316804235576-b3ik2oiekgbbp3n327dk29k8s7qrqg8c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.moevm.geoquest",
+            "certificate_hash": "b9f0335315679b827c649252c0344352a60f1f42"
+          }
+        },
+        {
+          "client_id": "316804235576-pqmahf0q5v3f60udjd49q8qn7gv7vg25.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.moevm.geoquest",
+            "certificate_hash": "4c9d6d5d14c7179328ada1ef301308069a1665ef"
+          }
+        },
+        {
+          "client_id": "316804235576-iniqt7dj19o3923fkin33a83lb6tg48s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.moevm.geoquest",
+            "certificate_hash": "f0f57a15e2435032185910b93e80237382e2d57b"
+          }
+        },
+        {
+          "client_id": "316804235576-cdrue85nmn800h93ocsu252k5r44r9o2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.moevm.geoquest",
+            "certificate_hash": "8bbca469bad20264c99bd0c7e60450f757bf9a42"
+          }
+        },
+        {
           "client_id": "316804235576-2orn2fra6r7mue5q9sp5vjefk2gda6m1.apps.googleusercontent.com",
           "client_type": 3
         }

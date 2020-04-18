@@ -40,7 +40,7 @@ import com.moevm.geoquest.models.QuestStatus
 import java.util.*
 
 
-class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
+class MapFragment(private val userId: String?, private val userName: String) : FragmentUpdateUI(), OnMapReadyCallback {
 
     companion object {
         private const val DEFAULT_ZOOM = 12.0f
@@ -48,8 +48,6 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     }
 
     private val db = Firebase.firestore
-    private val user = FirebaseAuth.getInstance().currentUser!!
-    private val userId = user.uid
 
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var gmap: GoogleMap
@@ -94,25 +92,27 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     }
 
     private fun checkCurrentQuestAlreadySelected(){
-        db.collection("Users")
-            .document(userId)
-            .collection("Quests")
-            .whereEqualTo("status", QuestStatus.InProgress)
-            .get()
-            .addOnSuccessListener { current_user_quest ->
-                val currentQuest = current_user_quest.documents
-                if (currentQuest.size == 1) {
-                    db.collection("Quests").document(currentQuest[0].id).get()
-                        .addOnSuccessListener {
-                            val questId = it?.id?.toIntOrNull()
-                            if(questId != null)
-                            startQuest(questId)
-                        }
-                        .addOnFailureListener {
-                            // TODO: Sorry fail to load
-                        }
+        if (userId != null) {
+            db.collection("Users")
+                .document(userId)
+                .collection("Quests")
+                .whereEqualTo("status", QuestStatus.InProgress)
+                .get()
+                .addOnSuccessListener { current_user_quest ->
+                    val currentQuest = current_user_quest.documents
+                    if (currentQuest.size == 1) {
+                        db.collection("Quests").document(currentQuest[0].id).get()
+                            .addOnSuccessListener {
+                                val questId = it?.id?.toIntOrNull()
+                                if (questId != null)
+                                    startQuest(questId)
+                            }
+                            .addOnFailureListener {
+                                // TODO: Sorry fail to load
+                            }
+                    }
                 }
-            }
+        }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -122,12 +122,14 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
         view?.findViewById<ImageButton>(R.id.area_button)
             ?.setOnClickListener(onShowQuestAreaListener)
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity!!)
-        mLocationPermissionGranted = checkLocationPermission()
-        if (mLocationPermissionGranted) {
-            getLastLocation()
-            initMapAsync()
-        } else {
-            requestLocationPermission()
+        if (userId != null) {
+            mLocationPermissionGranted = checkLocationPermission()
+            if (mLocationPermissionGranted) {
+                getLastLocation()
+                initMapAsync()
+            } else {
+                requestLocationPermission()
+            }
         }
     }
 
@@ -251,7 +253,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
     private fun questCompleted() {
         if (mQuestId >= 0) {
             db.collection("Users")
-                .document(userId)
+                .document(userId!!)
                 .collection("Quests")
                 .document(mQuestId.toString())
                 .set( mapOf("status" to QuestStatus.Completed) )
@@ -272,7 +274,7 @@ class MapFragment : FragmentUpdateUI(), OnMapReadyCallback {
                 .document(userId)
                 .set( mapOf(
                     "Time" to timerValue,
-                    "Username" to user.displayName
+                    "Username" to userName
                 ) )
                 .addOnSuccessListener {
                     mQuestId = -1
