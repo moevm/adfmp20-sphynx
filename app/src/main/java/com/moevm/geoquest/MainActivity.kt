@@ -35,24 +35,14 @@ class MainActivity : AppCompatActivity(), QuestsFragment.QuestsActionListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (System.getenv("test_mode") == "true")
-        {
-            if (auth.currentUser == null) {
-                startActivity(Intent(this, LoginActivity::class.java))
-                return
-            }
-            fragments[R.id.bottom_navigation_quests] = QuestsFragment(auth.currentUser?.uid)
-            fragments[R.id.bottom_navigation_map] =
-                MapFragment(auth.currentUser?.uid, auth.currentUser?.displayName ?: "")
-            fragments[R.id.bottom_navigation_profile] = ProfileFragment(auth.currentUser?.uid)
+        if (auth.currentUser == null) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            return
         }
-        else
-        {
-            fragments[R.id.bottom_navigation_quests] = QuestsFragment(null)
-            fragments[R.id.bottom_navigation_map] =
-                MapFragment(null, "Tester")
-            fragments[R.id.bottom_navigation_profile] = ProfileFragment(null)
-        }
+        fragments[R.id.bottom_navigation_quests] = QuestsFragment(auth.currentUser?.uid)
+        fragments[R.id.bottom_navigation_map] =
+            MapFragment(auth.currentUser?.uid, auth.currentUser?.displayName ?: "")
+        fragments[R.id.bottom_navigation_profile] = ProfileFragment(auth.currentUser?.uid)
 
         fragments.forEach {
             supportFragmentManager.beginTransaction()
