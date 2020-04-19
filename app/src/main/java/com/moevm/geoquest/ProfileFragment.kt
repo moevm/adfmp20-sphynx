@@ -21,6 +21,7 @@ class ProfileFragment(private val userId: String?) : FragmentUpdateUI() {
     private lateinit var mListView: ListView
     private lateinit var mCompletedQuests: ArrayList<QuestModel>
     private lateinit var mQuestsArrayAdapter: ArrayAdapter<QuestModel>
+    private var testMode: Boolean = true
 
 
     override fun onCreateView(
@@ -35,82 +36,121 @@ class ProfileFragment(private val userId: String?) : FragmentUpdateUI() {
     }
 
     private fun updateStatistics(){
-        if(userId != null)
-            db.collection("Users")
-                .document(userId)
-                .get()
-                .addOnSuccessListener {
-                    val mapKeys = it.data?.keys
-                    var points = 0L
-                    var quests = 0L
-                    var time = 0L
-                    var distance = 0.0
+        if (!testMode) {
+            if (userId != null)
+                db.collection("Users")
+                    .document(userId)
+                    .get()
+                    .addOnSuccessListener {
+                        val mapKeys = it.data?.keys
+                        var points = 0L
+                        var quests = 0L
+                        var time = 0L
+                        var distance = 0.0
 
-                    if (mapKeys?.contains("Statistic") == true) {
-                        Log.d("QuestResults", "Statistic exist")
-                        val data = it.data?.getValue("Statistic") as Map<String, *>
-                        points = data.getValue("Points").toString().toLong()
-                        quests = data.getValue("Quests").toString().toLong()
-                        time = data.getValue("Time").toString().toLong()
-                        distance = data.getValue("Distance").toString().toDouble() / 1000
+                        if (mapKeys?.contains("Statistic") == true) {
+                            Log.d("QuestResults", "Statistic exist")
+                            val data = it.data?.getValue("Statistic") as Map<String, *>
+                            points = data.getValue("Points").toString().toLong()
+                            quests = data.getValue("Quests").toString().toLong()
+                            time = data.getValue("Time").toString().toLong()
+                            distance = data.getValue("Distance").toString().toDouble() / 1000
+                        }
+                        view?.findViewById<TextView>(R.id.walked_total)
+                            ?.text = getString(R.string.profile_walked_total, distance)
+                        view?.findViewById<TextView>(R.id.quests_total)
+                            ?.text = getString(R.string.profile_quests_total, quests)
+                        view?.findViewById<TextView>(R.id.spent_time)
+                            ?.text =
+                            getString(R.string.profile_spent_time, timeToHoursMinutes(time.toInt()))
+                        view?.findViewById<TextView>(R.id.points_discovered)
+                            ?.text = getString(R.string.profile_points_discovered, points)
                     }
-                    view?.findViewById<TextView>(R.id.walked_total)
-                        ?.text = getString(R.string.profile_walked_total, distance)
-                    view?.findViewById<TextView>(R.id.quests_total)
-                        ?.text = getString(R.string.profile_quests_total, quests)
-                    view?.findViewById<TextView>(R.id.spent_time)
-                        ?.text = getString(R.string.profile_spent_time, timeToHoursMinutes(time.toInt()))
-                    view?.findViewById<TextView>(R.id.points_discovered)
-                        ?.text = getString(R.string.profile_points_discovered, points)
-                }
-                .addOnFailureListener{
-                    // TODO sorry fail to load
-                }
+                    .addOnFailureListener {
+                        // TODO sorry fail to load
+                    }
+        }
+        else
+        {
+            val points = 15L
+            val quests = 52L
+            val time = 15700L
+            val distance = 520.0
 
+            view?.findViewById<TextView>(R.id.walked_total)
+                ?.text = getString(R.string.profile_walked_total, distance)
+            view?.findViewById<TextView>(R.id.quests_total)
+                ?.text = getString(R.string.profile_quests_total, quests)
+            view?.findViewById<TextView>(R.id.spent_time)
+                ?.text = getString(R.string.profile_spent_time, timeToHoursMinutes(time.toInt()))
+            view?.findViewById<TextView>(R.id.points_discovered)
+                ?.text = getString(R.string.profile_points_discovered, points)
+        }
     }
 
     private fun fillCompletedQuest(){
-        if(userId == null) {
-            mCompletedQuests = arrayListOf()
-            return
-        }
-        db.collection("Quests").get()
-            .addOnSuccessListener { quests_list ->
-                db.collection("Users")
-                    .document(userId)
-                    .collection("Quests")
-                    .whereEqualTo("status", QuestStatus.Completed)
-                    .get()
-                    .addOnSuccessListener { completed_quests ->
-                        val toViewObjectsIds = completed_quests.documents.map { it.id }
-                        val toView = quests_list.filter { it.id in toViewObjectsIds }
-                        val arr = Array(toView.size){
-                            val toViewObj = toView[it]
-                            val toViewObjData = toViewObj.data
-                            QuestModel(
-                                toViewObj.id.toInt(),
-                                toViewObjData.getValue("Name").toString(),
-                                toViewObjData.getValue("Location").toString(),
-                                toViewObjData.getValue("Image").toString()
+        if (!testMode) {
+            if (userId == null) {
+                mCompletedQuests = arrayListOf()
+                return
+            }
+            db.collection("Quests").get()
+                .addOnSuccessListener { quests_list ->
+                    db.collection("Users")
+                        .document(userId)
+                        .collection("Quests")
+                        .whereEqualTo("status", QuestStatus.Completed)
+                        .get()
+                        .addOnSuccessListener { completed_quests ->
+                            val toViewObjectsIds = completed_quests.documents.map { it.id }
+                            val toView = quests_list.filter { it.id in toViewObjectsIds }
+                            val arr = Array(toView.size) {
+                                val toViewObj = toView[it]
+                                val toViewObjData = toViewObj.data
+                                QuestModel(
+                                    toViewObj.id.toInt(),
+                                    toViewObjData.getValue("Name").toString(),
+                                    toViewObjData.getValue("Location").toString(),
+                                    toViewObjData.getValue("Image").toString()
+                                )
+                            }
+                            mCompletedQuests = ArrayList(arr.asList())
+                            if (context == null)
+                                return@addOnSuccessListener
+                            mQuestsArrayAdapter = QuestsArrayAdapter(
+                                context!!,
+                                R.layout.quest_list_item,
+                                mCompletedQuests
                             )
+                            mListView.adapter = mQuestsArrayAdapter
                         }
-                        mCompletedQuests = ArrayList(arr.asList())
-                        if (context == null)
-                            return@addOnSuccessListener
-                        mQuestsArrayAdapter = QuestsArrayAdapter(
-                            context!!,
-                            R.layout.quest_list_item,
-                            mCompletedQuests
-                        )
-                        mListView.adapter = mQuestsArrayAdapter
-                    }
-                    .addOnFailureListener { ex ->
-                        // TODO: Sorry fail to load
-                    }
+                        .addOnFailureListener { ex ->
+                            // TODO: Sorry fail to load
+                        }
+                }
+                .addOnFailureListener { ex ->
+                    // TODO: Sorry fail to load
+                }
+        }
+        else
+        {
+           val arr = Array(1) {
+                QuestModel(
+                    -2,
+                    "Completed Quest Name",
+                    "Completed Quest Location",
+                    "Completed Quest Image"
+                )
             }
-            .addOnFailureListener{ ex ->
-                // TODO: Sorry fail to load
-            }
+            mCompletedQuests = ArrayList(arr.asList())
+
+            mQuestsArrayAdapter = QuestsArrayAdapter(
+                context!!,
+                R.layout.quest_list_item,
+                mCompletedQuests
+            )
+            mListView.adapter = mQuestsArrayAdapter
+        }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
