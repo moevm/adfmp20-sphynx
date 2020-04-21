@@ -10,9 +10,10 @@ class RecordActivityUnitTest {
     fun test_timeToHoursMinutes() {
         assertEquals(timeToHoursMinutes(0), "0 мин.")
         assertEquals(timeToHoursMinutes(50), "50 мин.")
-        val str = timeToHoursMinutes(555)
+        var str = timeToHoursMinutes(555)
         assertTrue(str == "9.3 ч." || str == "9,3 ч.")
-        assertEquals(timeToHoursMinutes(600), "10.0 ч.")
+        str = timeToHoursMinutes(600)
+        assertTrue(str == "10.0 ч." || str == "10,0 ч.")
         assertEquals(timeToHoursMinutes(-500), "-500 мин.")     // for fun
         assertEquals(timeToHoursMinutes(-50), "-50 мин.")     // for fun
     }
