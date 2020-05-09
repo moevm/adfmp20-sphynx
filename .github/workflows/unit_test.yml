@@ -15,7 +15,12 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Test with Gradle
+    - name: Run Tests
       run: |
         chmod +x ./gradlew
         ./gradlew test
+    - name: Run AndroidTests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 29
+        script: ./gradlew connectedCheck
