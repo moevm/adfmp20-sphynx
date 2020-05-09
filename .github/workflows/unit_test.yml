@@ -6,18 +6,7 @@ on:
     - '**'
 
 jobs:
-  AndroidTest:
-    runs-on: macos-latest
-    steps:
-    - name: checkout
-      uses: actions/checkout@v2
-    - name: run tests
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 29
-        script: ./gradlew connectedCheck
-  
-  test:
+  Test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -25,8 +14,15 @@ jobs:
       run: |
         chmod +x ./gradlew
         ./gradlew test
-    - name: Run AndroidTests
-      uses: faruktoptas/android-github-actions-emulator@1.1.0
+  
+  AndroidTest:
+    runs-on: macos-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: Run Android Tests
+      uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 27
+        api-level: 29
         script: ./gradlew connectedCheck
+  
