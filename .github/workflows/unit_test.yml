@@ -19,4 +19,5 @@ jobs:
     - name: Run AndroidTests
       uses: vgaidarji/android-github-actions-emulator@v1.0.1
       with:
+        api-level: 29
         script: ./gradlew connectedCheck
