@@ -20,7 +20,7 @@ jobs:
         chmod +x ./gradlew
         ./gradlew test
     - name: Run AndroidTests
-      uses: reactivecircus/android-emulator-runner@v2
+      uses: vgaidarji/android-github-actions-emulator@v1.0.1
       with:
         api-level: 29
         script: ./gradlew connectedCheck
